@@ -2,13 +2,61 @@
 
 
 #include "SChessGameModeBase.h"
-#include "Actors/Pawns/ChPawn.h"
+
+ABasePawn* ASChessGameModeBase::GetPawnOnCellByIndex(int32 IndexX, int32 IndexY) const
+{
+	int32 X = 0, Y = 0;
+	for (auto Cell : DeskArray)
+	{
+		Cell->GetIndex(X,Y);
+		if (X == IndexX && Y == IndexY)
+		{
+			return Cell->GetPawnOnCell();
+		}
+	}
+
+	return nullptr;
+}
+
+void ASChessGameModeBase::SetPawnOnCellByIndex(ABasePawn* PawnToSet, int32 IndexX, int32 IndexY)
+{
+	int32 X = 0, Y = 0;
+	if (PawnToSet)
+	{
+		for (auto Cell : DeskArray)
+		{
+			Cell->GetIndex(X, Y);
+			if (X == IndexX && Y == IndexY)
+			{
+				Cell->SetPawnOnCell(PawnToSet);
+				break;
+			}
+		}
+	
+	}
+}
+
+ABoardCell* ASChessGameModeBase::GetCellByIndex(int32 X, int32 Y) const
+{
+	int32 indX = 0, indY = 0;
+	for ( int32 i =0; i< DeskArray.Num(); i++)
+	{
+		DeskArray[i]->GetIndex(indX, indY);
+		if (indX == X && indY == Y)
+		{
+			return DeskArray[i];
+		}
+	}
+
+	return nullptr;
+}
 
 void ASChessGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
 
 	CreateDesk();
+	InitStartupArragment();
 }
 
 void ASChessGameModeBase::CreateDesk()
@@ -23,78 +71,100 @@ void ASChessGameModeBase::CreateDesk()
 	{
 		ABoardCell* Cell = GetWorld()->SpawnActor<ABoardCell>(Location, Rotation, SpawnInfo);
 
-		if (Cell)// && BoardCellMesh)
+		if (Cell)
 		{
-			
 			if (BoardCellBlackMesh && BoardCellWhiteMesh)
 			{
 				if ((i + 1) % 2 == 0)
 				{
-					rightDir ? Cell->SetActorMesh(BoardCellBlackMesh) : Cell->SetActorMesh(BoardCellWhiteMesh);
-					//Cell->SetActorMesh(BoardCellBlackMesh);
+					rightDir ? Cell->SetActorMesh(BoardCellWhiteMesh) : Cell->SetActorMesh(BoardCellBlackMesh);
 				}
 				else
 				{
-					rightDir ? Cell->SetActorMesh(BoardCellWhiteMesh) : Cell->SetActorMesh(BoardCellBlackMesh);
-					//Cell->SetActorMesh(BoardCellWhiteMesh);
+					rightDir ? Cell->SetActorMesh(BoardCellBlackMesh) : Cell->SetActorMesh(BoardCellWhiteMesh);
 				}
 					
 			}
 			
-			//if (rightDir)
-			Location.X += 110.0f;
-			//else 
-				//Location.X -= 110.0f;
-
+			Location.Y += 110.0f;
 			IndX = (i + 1) % 8;
 			IndX = IndX == 0 ? 8 : IndX;
 			Cell->SetIndex(IndX, IndY +1);
 
 			if ((i + 1) % 8 == 0)
 			{
-				Location.Y += 110.0f;
+				Location.X += 110.0f;
 				rightDir = !rightDir;
-				Location.X = -450.0f;//0.0f;
+				Location.Y = -320.0f;
 				IndY++;
-				//IndX = 0;
 			}
 			DeskArray.Add(Cell);
-
-
-			//IndX++;
 		}
-
-		
-		
 	}
+}
 
-	FVector PawnLocation(0.0f, 0.0f, 100.0f);
-	FRotator RotationCh(0.0f, 0.0f, 90.0f);
+void ASChessGameModeBase::SpawnChessPawn(ABoardCell* CellActorOnSpawn, TSubclassOf<ABasePawn> PawnClass, TEnumAsByte<PawnColorType> PawnColor)
+{
+	FVector PawnLocation(0.0f, 0.0f, 0.0f);
+	FRotator Rotation(0.0f, 0.0f, 0.0f);
 	ABasePawn* ChessFigure = nullptr;
-	ABasePawn* ChessFigure1 = nullptr;
-	if (DeskArray.Num() > 0)
+
+	if (CellActorOnSpawn)
 	{
-		PawnLocation = DeskArray[0]->GetActorLocation();
-		//PawnLocation.Z += 50;
-		if (ChessPawnClass)
-			ChessFigure = GetWorld()->SpawnActor<AChPawn>(ChessPawnClass, PawnLocation, RotationCh);
+		PawnLocation = CellActorOnSpawn->GetActorLocation();
+		if (PawnClass)
+		{
+			ChessFigure = GetWorld()->SpawnActor<ABasePawn>(PawnClass, PawnLocation, Rotation);
 
-		if (ChessFigure)
-		{
-			ChessFigure->InitFigure();
-			
+			if (ChessFigure)
+			{
+				ChessFigure->PawnColor = PawnColor;
+				ChessFigure->InitFigure();
+			}
 		}
-		PawnLocation = DeskArray[1]->GetActorLocation();
-		ChessFigure1 = GetWorld()->SpawnActor<AChPawn>(ChessPawnClass, PawnLocation, RotationCh);
-		if (ChessFigure1)
-		{
-			ChessFigure1->PawnColor = PawnColorType::White;
-			ChessFigure1->InitFigure();
-		}
-		
+
+		CellActorOnSpawn->SetPawnOnCell(ChessFigure);
 	}
-	
+}
 
+void ASChessGameModeBase::InitStartupArragment()
+{
+	TSubclassOf<ABasePawn> tempPawnClass;
+	FPawnBaseLocationInfo tempInfo;
+	ABoardCell* tempCell = nullptr;
+
+	for (int32 i = 0; i < TOTAL_FIGURES_NUM; i++)
+	{
+		tempInfo = InitialFiguresArrangment[i];
+		switch (tempInfo.PawnType)
+		{
+		case PawnTypes::Pawn:
+			tempPawnClass = ChessPawnClass;
+			break;
+		case PawnTypes::Bishop:
+			tempPawnClass = ChessBishopClass;
+			break;
+		case PawnTypes::King:
+			tempPawnClass = ChessKingClass;
+			break;
+		case PawnTypes::Tour:
+			tempPawnClass = ChessTourClass;
+			break;
+		case PawnTypes::Horse:
+			tempPawnClass = ChessHorseClass;
+			break;
+		case PawnTypes::Queen:
+			tempPawnClass = ChessQueenClass;
+			break;
+		default:
+			break;
+		}
+
+		tempCell = GetCellByIndex(tempInfo.IndexX, tempInfo.IndexY);
+		if (tempCell && tempPawnClass)
+			SpawnChessPawn(tempCell, tempPawnClass, tempInfo.PawnSideColor);
+
+	}
 }
 
 void ASChessGameModeBase::Tick(float DeltaSeconds)

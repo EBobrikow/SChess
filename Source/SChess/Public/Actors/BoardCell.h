@@ -7,6 +7,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/Material.h"
+#include "Actors/Pawns/BasePawn.h"
 #include "BoardCell.generated.h"
 
 UCLASS()
@@ -34,7 +35,13 @@ public:
 	void SetIndex(int32 IndX, int32 IndY);
 
 	UFUNCTION(BlueprintCallable)
-	void GetIndex(int32& IndX, int32& IndY);
+	void GetIndex(int32& IndX, int32& IndY) const;
+
+	UFUNCTION(BlueprintCallable)
+	void SetPawnOnCell(ABasePawn* ChessPawn);
+
+	UFUNCTION(BlueprintCallable)
+	ABasePawn* GetPawnOnCell() const;
 
 protected:
 	// Called when the game starts or when spawned
@@ -51,5 +58,8 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	int32 IndexY;
+
+	UPROPERTY()
+	ABasePawn* PawnOnCell = nullptr;
 
 };

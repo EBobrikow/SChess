@@ -55,10 +55,26 @@ void ABoardCell::SetIndex(int32 IndX, int32 IndY)
 	IndexY = IndY;
 }
 
-void ABoardCell::GetIndex(int32& IndX, int32& IndY)
+void ABoardCell::GetIndex(int32& IndX, int32& IndY) const
 {
 	IndX = IndexX;
 	IndY = IndexY;
+}
+
+void ABoardCell::SetPawnOnCell(ABasePawn* ChessPawn)
+{
+	if (ChessPawn)
+	{
+		PawnOnCell = ChessPawn;
+	}
+}
+
+ABasePawn* ABoardCell::GetPawnOnCell() const
+{
+	if (PawnOnCell)
+		return PawnOnCell;
+	else
+		return nullptr;
 }
 
 // Called when the game starts or when spawned

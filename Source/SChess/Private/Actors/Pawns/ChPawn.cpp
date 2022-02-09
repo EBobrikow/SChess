@@ -4,6 +4,19 @@
 #include "Actors/Pawns/ChPawn.h"
 
 
+
+void AChPawn::ConfigurePawn()
+{
+	FVector Scale(27.0f, 4.0f, 27.0f);
+	FRotator Rotation(0.0f, 0.0f, 90.0f);
+	if (MeshComponent)
+	{
+		MeshComponent->SetRelativeScale3D(Scale);
+	}
+	
+	this->SetActorRotation(Rotation);
+}
+
 AChPawn::AChPawn()
 {
 

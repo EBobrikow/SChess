@@ -23,19 +23,19 @@ public:
 
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-		TEnumAsByte<PawnTypes> PawnType;
+	TEnumAsByte<PawnTypes> PawnType;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-		UStaticMesh* PawnMesh;
+	UStaticMesh* PawnMesh;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-		UMaterial* PawnMeshWhiteMaterial;
+	UMaterialInstance* PawnMeshWhiteMaterial;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-		UMaterial* PawnMeshBlackMaterial;
+	UMaterialInstance* PawnMeshBlackMaterial;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-		TEnumAsByte<PawnColorType> PawnColor;
+	TEnumAsByte<PawnColorType> PawnColor;
 
 	virtual void InitFigure();
 
@@ -45,9 +45,7 @@ protected:
 
 	
 	
-
-	UPROPERTY()
-	UInstancedStaticMeshComponent* ISMComp;
+	virtual void ConfigurePawn();
 
 	UPROPERTY()
 	UStaticMeshComponent* MeshComponent;

@@ -10,3 +10,16 @@ Globals::Globals()
 Globals::~Globals()
 {
 }
+
+FPawnBaseLocationInfo::FPawnBaseLocationInfo()
+	: FPawnBaseLocationInfo(0,0, PawnColorType::None, PawnTypes::Pawn)
+{
+}
+
+FPawnBaseLocationInfo::FPawnBaseLocationInfo(int32 X, int32 Y, TEnumAsByte<PawnColorType> SideColor, TEnumAsByte<PawnTypes> Type)
+	: IndexX(X)
+	, IndexY(Y)
+	, PawnSideColor (SideColor)
+	, PawnType(Type)
+{
+}

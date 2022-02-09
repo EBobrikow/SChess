@@ -4,29 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "Actors/Pawns/BasePawn.h"
-#include "Globals.h"
-#include "ChPawn.generated.h"
+#include "ChHorse.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class SCHESS_API AChPawn : public ABasePawn
+class SCHESS_API AChHorse : public ABasePawn
 {
 	GENERATED_BODY()
-
-public:
-
 	
-
 protected:
 
 	virtual void BeginPlay() override;
-	
+
 	virtual void ConfigurePawn() override;
-	
-
-public:
-	AChPawn();
-
 };

@@ -20,30 +20,35 @@ void ABasePawn::BeginPlay()
 	
 }
 
+void ABasePawn::ConfigurePawn()
+{
+	
+}
+
 void ABasePawn::InitFigure()
 {
-	ISMComp = NewObject<UInstancedStaticMeshComponent>(this);
-	ISMComp->RegisterComponent();
+	
 	if (PawnMesh)
 	{
-		if (PawnColor == PawnColorType::Black && PawnMeshBlackMaterial)
-			PawnMesh->SetMaterial(0, PawnMeshBlackMaterial);
-		else if(PawnColor == PawnColorType::White && PawnMeshWhiteMaterial)
-			PawnMesh->SetMaterial(0, PawnMeshWhiteMaterial);
-
-		/*if (MeshComponent)
+		if (MeshComponent)
 		{
 			MeshComponent->SetStaticMesh(PawnMesh);
-		}*/
+		
+		}
 
-		FVector Scale(27.0f,4.5f,27.0f);
-		//MeshComponent->SetRelativeScale3D(Scale);
-		ISMComp->SetStaticMesh(PawnMesh);
-		ISMComp->SetRelativeScale3D(Scale);
+		if (PawnColor == PawnColorType::Black && PawnMeshBlackMaterial)
+		{
+			
+			MeshComponent->SetMaterial(0, PawnMeshBlackMaterial);
+		}
+			
+		else if(PawnColor == PawnColorType::White && PawnMeshWhiteMaterial)
+			MeshComponent->SetMaterial(0, PawnMeshWhiteMaterial);
+
+		
 	}
 	
-	ISMComp->SetFlags(RF_Transactional);
-	this->AddInstanceComponent(ISMComp);
+	ConfigurePawn();
 }
 
 // Called every frame

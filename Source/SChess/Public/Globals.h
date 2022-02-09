@@ -27,29 +27,32 @@ enum class PawnColorType : uint8
 	White,
 };
 
+
 USTRUCT(BlueprintType)
-struct FPawnInfo
+struct FPawnBaseLocationInfo
 {
 	GENERATED_BODY()
 public:
 	UPROPERTY(BlueprintReadWrite)
+	int32 IndexX;
+
+	UPROPERTY(BlueprintReadWrite)
+	int32 IndexY;
+
+	UPROPERTY(BlueprintReadWrite)
+	TEnumAsByte<PawnColorType> PawnSideColor;
+
+	UPROPERTY(BlueprintReadWrite)
 	TEnumAsByte<PawnTypes> PawnType;
 
-	UPROPERTY(BlueprintReadWrite)
-	UStaticMesh* PawnMesh;
 
-	UPROPERTY(BlueprintReadWrite)
-	UMaterial* PawnMeshWhiteMaterial;
+	FPawnBaseLocationInfo();
 
-	UPROPERTY(BlueprintReadWrite)
-	UMaterial* PawnMeshBlackMaterial;
-
-	UPROPERTY(BlueprintReadWrite)
-	TEnumAsByte<PawnColorType> PawnColor;
+	FPawnBaseLocationInfo(int32 X, int32 Y, TEnumAsByte<PawnColorType> SideColor, TEnumAsByte<PawnTypes> Type);
 };
-/**
- * 
- */
+
+
+
 class SCHESS_API Globals
 {
 public:
