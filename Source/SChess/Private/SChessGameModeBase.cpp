@@ -2,6 +2,34 @@
 
 
 #include "SChessGameModeBase.h"
+#include "Kismet/GameplayStatics.h"
+#include "Engine/PostProcessVolume.h"
+#include "Kismet/KismetMaterialLibrary.h"
+#include "Actors/Pawns/ChPawn.h"
+
+
+void ASChessGameModeBase::BeginPlay()
+{
+	Super::BeginPlay();
+
+	CreateDesk();
+	InitStartupArragment();
+
+	APlayerController* PlayerControl = UGameplayStatics::GetPlayerController(this, 0);
+	if (PlayerControl)
+	{
+		PlayerControl->bShowMouseCursor = true;
+		PlayerControl->SetInputMode(FInputModeGameAndUI());
+	}
+
+
+}
+
+
+void ASChessGameModeBase::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+}
 
 ABasePawn* ASChessGameModeBase::GetPawnOnCellByIndex(int32 IndexX, int32 IndexY) const
 {
@@ -51,13 +79,111 @@ ABoardCell* ASChessGameModeBase::GetCellByIndex(int32 X, int32 Y) const
 	return nullptr;
 }
 
-void ASChessGameModeBase::BeginPlay()
+void ASChessGameModeBase::AddDynaMatForPostProcessVolume()
 {
-	Super::BeginPlay();
+	TArray<AActor*> Actors;
+	UGameplayStatics::GetAllActorsOfClass(this, APostProcessVolume::StaticClass(), Actors);
+	if (Actors.Num() > 0)
+	{
+		APostProcessVolume* PPV = Cast<APostProcessVolume>(Actors[0]);
+		if (PPV)
+		{
+			FPostProcessSettings& PostProcessSettings = PPV->Settings;
+			if (HighlightMaterial)
+			{
+				DynamicHighlightMaterial = UKismetMaterialLibrary::CreateDynamicMaterialInstance(this, HighlightMaterial);
+				FWeightedBlendable WeightedBlendable;
+				WeightedBlendable.Object = DynamicHighlightMaterial;
+				WeightedBlendable.Weight = 1;
 
-	CreateDesk();
-	InitStartupArragment();
+				PostProcessSettings.WeightedBlendables.Array.Add(WeightedBlendable);
+			}
+		}
+	}
 }
+
+void ASChessGameModeBase::UpdatePostProcessMaterial(int32 X, int32 Y, int32 Z)
+{
+	if (DynamicHighlightMaterial)
+	{
+		FLinearColor NewColor(X, Y, Z, 0.0f);
+		DynamicHighlightMaterial->SetVectorParameterValue(TEXT("HighlightColor"), NewColor);
+	}
+}
+
+void ASChessGameModeBase::StartMovePawn(ABoardCell* FromCell, ABoardCell* ToCell)
+{
+	if (FromCell && ToCell && FromCell != ToCell)
+	{
+		ABasePawn* PawnOnPrevCell = FromCell->GetPawnOnCell();
+		ABasePawn* PawnOnCurCell = ToCell->GetPawnOnCell();
+		if (PawnOnPrevCell)
+		{
+			if (PawnOnCurCell )
+			{
+				if (PawnOnPrevCell->PawnColor != PawnOnCurCell->PawnColor)
+				{
+					if (PawnOnCurCell->PawnType == PawnTypes::King)
+					{
+						UE_LOG(LogTemp, Warning, TEXT("Impossible to destroy King pawn"));
+						return;
+					}
+					else
+					{
+						PawnOnCurCell->SetFoothold(nullptr);
+						PawnOnCurCell->Destroy();
+						ToCell->SetPawnOnCell(nullptr);
+						if (GEngine)
+							GEngine->ForceGarbageCollection(true);
+					}
+					
+				}
+				else
+				{
+					return;
+				}
+				
+
+			}
+
+			FVector loc = ToCell->GetActorLocation();
+			PawnOnPrevCell->SetActorLocation(loc);
+			PawnOnPrevCell->ConfigurePawn();
+			if (PawnOnPrevCell->PawnType == PawnTypes::Pawn)
+			{
+				AChPawn* ChPawn = Cast<AChPawn>(PawnOnPrevCell);
+				ChPawn->bIsFirstMove = false;
+			}
+				
+			PawnOnPrevCell->SetFoothold(ToCell);
+			ToCell->SetPawnOnCell(PawnOnPrevCell);
+			FromCell->SetPawnOnCell(nullptr);
+
+		}
+	}
+}
+
+bool ASChessGameModeBase::IsPawnExistOnCell(int32 X, int32 Y, TEnumAsByte<PawnColorType> PawnColor, bool& IsSameColor)
+{
+	ABasePawn* tmpPawn = GetPawnOnCellByIndex(X, Y);
+	if (tmpPawn)
+	{
+		IsSameColor = tmpPawn->PawnColor == PawnColor;
+		return true;
+	}	
+	else
+		return false;
+}
+
+void ASChessGameModeBase::UnHighlightAll()
+{
+	for (auto cell : DeskArray)
+	{
+		cell->MeshComponent->SetRenderCustomDepth(false);
+	}
+}
+
+
 
 void ASChessGameModeBase::CreateDesk()
 {
@@ -119,6 +245,7 @@ void ASChessGameModeBase::SpawnChessPawn(ABoardCell* CellActorOnSpawn, TSubclass
 			if (ChessFigure)
 			{
 				ChessFigure->PawnColor = PawnColor;
+				ChessFigure->SetFoothold(CellActorOnSpawn);
 				ChessFigure->InitFigure();
 			}
 		}
@@ -167,7 +294,4 @@ void ASChessGameModeBase::InitStartupArragment()
 	}
 }
 
-void ASChessGameModeBase::Tick(float DeltaSeconds)
-{
-	Super::Tick(DeltaSeconds);
-}
+

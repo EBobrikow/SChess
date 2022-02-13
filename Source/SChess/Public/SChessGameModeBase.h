@@ -5,9 +5,11 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameMode.h"
 #include "Actors/BoardCell.h"
-#include "Actors/Pawns/BasePawn.h"
+//#include "Actors/Pawns/BasePawn.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/Material.h"
+#include "Materials/MaterialInstance.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "Globals.h"
 #include "SChessGameModeBase.generated.h"
 
@@ -51,6 +53,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	TSubclassOf<ABasePawn> ChessKingClass;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UMaterialInstance* HighlightMaterial;
+
 	UFUNCTION(BlueprintCallable)
 	ABasePawn* GetPawnOnCellByIndex(int32 IndexX, int32 IndexY) const;
 
@@ -59,6 +64,22 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	ABoardCell* GetCellByIndex(int32 X, int32 Y) const;
+
+
+	UFUNCTION(BlueprintCallable)
+	void AddDynaMatForPostProcessVolume();
+
+	UFUNCTION(BlueprintCallable)
+	void UpdatePostProcessMaterial(int32 X, int32 Y, int32 Z);
+
+	UFUNCTION(BlueprintCallable)
+	void StartMovePawn(ABoardCell* FromCell, ABoardCell* ToCell);
+
+	UFUNCTION(BlueprintCallable)
+	bool IsPawnExistOnCell(int32 X, int32 Y, TEnumAsByte<PawnColorType> PawnColor, bool& IsSameColor);
+
+	UFUNCTION(BlueprintCallable)
+	void UnHighlightAll();
 
 protected:
 
@@ -77,6 +98,9 @@ private:
 
 	UFUNCTION()
 	void InitStartupArragment();
+
+	UPROPERTY()
+	UMaterialInstanceDynamic* DynamicHighlightMaterial = nullptr;
 
 
 

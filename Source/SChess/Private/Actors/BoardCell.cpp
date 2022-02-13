@@ -13,7 +13,8 @@ ABoardCell::ABoardCell()
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshConponent"));
 	if (MeshComponent)
 	{
-		MeshComponent->SetupAttachment(RootComponent);
+		RootComponent = MeshComponent;
+		//MeshComponent->SetupAttachment(RootComponent);
 	}
 
 	//const ConstructorHelpers::FObjectFinder<UStaticMesh> MeshObj(TEXT("/Engine/BasicShapes/Plane.Plane")); //
@@ -34,6 +35,7 @@ void ABoardCell::SetActorMesh(UStaticMesh* Mesh)
 	if (StaticMesh && MeshComponent)
 	{
 		MeshComponent->SetStaticMesh(StaticMesh);
+		MeshComponent->BodyInstance.SetCollisionProfileName("WorldDynamic");
 	}
 }
 
@@ -63,10 +65,8 @@ void ABoardCell::GetIndex(int32& IndX, int32& IndY) const
 
 void ABoardCell::SetPawnOnCell(ABasePawn* ChessPawn)
 {
-	if (ChessPawn)
-	{
-		PawnOnCell = ChessPawn;
-	}
+	PawnOnCell = ChessPawn;
+	
 }
 
 ABasePawn* ABoardCell::GetPawnOnCell() const

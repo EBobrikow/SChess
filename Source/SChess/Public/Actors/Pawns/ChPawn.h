@@ -4,9 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Actors/Pawns/BasePawn.h"
-#include "Globals.h"
+//#include "Globals.h"
+//#include "Actors/BoardCell.h"
+//#include "Kismet/GameplayStatics.h"
+//#include "SChessGameModeBase.h"
 #include "ChPawn.generated.h"
 
+//class ABoardCell;
 /**
  * 
  */
@@ -19,6 +23,8 @@ public:
 
 	
 
+	//virtual TArray<ABoardCell*> GetPossibleSteps() override;
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -28,5 +34,9 @@ protected:
 
 public:
 	AChPawn();
+
+private:
+
+	
 
 };

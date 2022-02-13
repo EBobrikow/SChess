@@ -7,7 +7,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/Material.h"
-#include "Actors/Pawns/BasePawn.h"
+//#include "Actors/Pawns/BasePawn.h"
 #include "BoardCell.generated.h"
 
 UCLASS()

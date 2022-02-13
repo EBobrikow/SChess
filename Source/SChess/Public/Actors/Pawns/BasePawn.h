@@ -7,9 +7,14 @@
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Globals.h"
+#include "Kismet/GameplayStatics.h"
+#include "SChessGameModeBase.h"
 #include "Components/StaticMeshComponent.h"
 #include "Materials/Material.h"
 #include "BasePawn.generated.h"
+
+class ABoardCell;
+//class ASChessGameModeBase;
 
 UCLASS()
 class SCHESS_API ABasePawn : public APawn
@@ -39,13 +44,33 @@ public:
 
 	virtual void InitFigure();
 
+	virtual void ConfigurePawn();
+
+	virtual TArray<ABoardCell*> GetPossibleSteps();
+
+	UFUNCTION(BlueprintCallable)
+	ABoardCell* GetFoohold() const;
+
+	UFUNCTION(BlueprintCallable)
+	void SetFoothold(ABoardCell* footholdCell);
+
+	UPROPERTY()
+	bool bIsFirstMove;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+
+
+	UPROPERTY()
+	TSet<MovementDirections> MovementPattern;
+
+	UPROPERTY()
+	TEnumAsByte<MovementRange> MovementRange;
 	
-	
-	virtual void ConfigurePawn();
+	UPROPERTY()
+	ABoardCell* Foothold;
 
 	UPROPERTY()
 	UStaticMeshComponent* MeshComponent;
@@ -59,6 +84,10 @@ public:
 
 private:
 
-	
+	UFUNCTION()
+	bool CheckStepBorders(int32 Pos);
+
+	UFUNCTION()
+	bool CheckIsAvailableStep(int32 X, int32 Y, bool& CanGoFurther);
 
 };

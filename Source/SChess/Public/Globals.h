@@ -52,6 +52,36 @@ public:
 };
 
 
+UENUM(BlueprintType)
+enum class MovementDirections : uint8
+{
+	Forward,
+	Forward_Left,
+	Left,
+	Back_Left,
+	Back,
+	Back_Right,
+	Right,
+	Forward_Right,
+	T_Forward_Right,
+	T_Forward_Left,
+	T_Left_Right,
+	T_Left_Left,
+	T_Back_Right,
+	T_Back_Left,
+	T_Right_Right,
+	T_Right_Left,
+	Atack_Forward_Left,
+	Atack_Forward_Right,
+};
+
+UENUM(BlueprintType)
+enum class MovementRange : uint8
+{
+	OneStep,
+	Infinite,
+};
+
 
 class SCHESS_API Globals
 {

@@ -6,6 +6,18 @@
 void AChQueen::BeginPlay()
 {
 	Super::BeginPlay();
+
+	MovementPattern.Add(MovementDirections::Forward_Left);
+	MovementPattern.Add(MovementDirections::Forward_Right);
+	MovementPattern.Add(MovementDirections::Back_Left);
+	MovementPattern.Add(MovementDirections::Back_Right);
+
+	MovementPattern.Add(MovementDirections::Forward);
+	MovementPattern.Add(MovementDirections::Left);
+	MovementPattern.Add(MovementDirections::Back);
+	MovementPattern.Add(MovementDirections::Right);
+
+	MovementRange = MovementRange::Infinite;
 }
 
 void AChQueen::ConfigurePawn()
