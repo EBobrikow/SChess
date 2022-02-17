@@ -6,6 +6,17 @@
 void AChHorse::BeginPlay()
 {
 	Super::BeginPlay();
+
+	MovementPattern.Add(MovementDirections::T_Forward_Right);
+	MovementPattern.Add(MovementDirections::T_Forward_Left);
+	MovementPattern.Add(MovementDirections::T_Left_Right);
+	MovementPattern.Add(MovementDirections::T_Left_Left);
+	MovementPattern.Add(MovementDirections::T_Back_Right);
+	MovementPattern.Add(MovementDirections::T_Back_Left);
+	MovementPattern.Add(MovementDirections::T_Right_Right);
+	MovementPattern.Add(MovementDirections::T_Right_Left);
+
+	MovementRange = MovementRange::OneStep;
 }
 
 void AChHorse::ConfigurePawn()

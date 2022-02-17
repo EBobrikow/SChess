@@ -39,6 +39,7 @@ TArray<ABoardCell*> ABasePawn::GetPossibleSteps()
 	TArray<ABoardCell*> OutArray;
 	bool DetectedPawnSameColor = false;
 	int32 moveDirectionX = 0, moveDirectionY = 0;
+	bool empty = false;
 
 	moveDirectionX = (PawnColor == PawnColorType::White) ? 1 : -1;
 	moveDirectionY = (PawnColor == PawnColorType::White) ? 1 : -1;
@@ -55,7 +56,7 @@ TArray<ABoardCell*> ABasePawn::GetPossibleSteps()
 
 				if (MovementRange == MovementRange::OneStep)
 				{
-					bool empty = false;
+					
 					if (CheckIsAvailableStep(CurX, CurY + moveDirectionY, empty))
 					{
 						OutArray.Add(GameMode->GetCellByIndex(CurX, CurY + moveDirectionY));
@@ -87,33 +88,275 @@ TArray<ABoardCell*> ABasePawn::GetPossibleSteps()
 
 				break;
 
-			case MovementDirections::Atack_Forward_Left:
-				if (CurX + moveDirectionX <= 8 && CurX + moveDirectionX > 0 && CurY - moveDirectionY <= 8 && CurY - moveDirectionY > 0)
+			case MovementDirections::Forward_Left:
+				if (MovementRange == MovementRange::OneStep)
 				{
-					if (GameMode->IsPawnExistOnCell(CurX - moveDirectionX, CurY + moveDirectionY, PawnColor, DetectedPawnSameColor))
+					if (PawnType == PawnTypes::Pawn)
 					{
-						if (!DetectedPawnSameColor)
+						if (CheckStepBorders(CurX + moveDirectionX) && CheckStepBorders(CurY - moveDirectionY))
+						{
+							if (GameMode->IsPawnExistOnCell(CurX - moveDirectionX, CurY + moveDirectionY, PawnColor, DetectedPawnSameColor))
+							{
+								if (!DetectedPawnSameColor)
+								{
+									OutArray.Add(GameMode->GetCellByIndex(CurX - moveDirectionX, CurY + moveDirectionY));
+								}
+
+							}
+						}
+					}
+					else
+					{
+						
+						if (CheckIsAvailableStep(CurX - moveDirectionX, CurY + moveDirectionY, empty))
 						{
 							OutArray.Add(GameMode->GetCellByIndex(CurX - moveDirectionX, CurY + moveDirectionY));
 						}
-
+					}
+				}
+				else
+				{
+					int32 step = 1;
+					bool isGoFurther = true;
+					while (CheckIsAvailableStep(CurX - (moveDirectionX * step), CurY + (moveDirectionY * step), isGoFurther))
+					{
+						OutArray.Add(GameMode->GetCellByIndex(CurX - (moveDirectionX * step), CurY + (moveDirectionY * step)));
+						step++;
+						if (!isGoFurther)
+						{
+							break;
+						}
 					}
 				}
 
-
 				break;
 
-			case MovementDirections::Atack_Forward_Right:
-				if (CurX + moveDirectionX <= 8 && CurX + moveDirectionX > 0 && CurY - moveDirectionY <= 8 && CurY - moveDirectionY > 0)
+			case MovementDirections::Forward_Right:
+				if (MovementRange == MovementRange::OneStep)
 				{
-					if (GameMode->IsPawnExistOnCell(CurX + moveDirectionX, CurY + moveDirectionY, PawnColor, DetectedPawnSameColor))
+					if (PawnType == PawnTypes::Pawn)
 					{
-						if (!DetectedPawnSameColor)
+						if (CheckStepBorders(CurX + moveDirectionX) && CheckStepBorders(CurY - moveDirectionY))
+						{
+							if (GameMode->IsPawnExistOnCell(CurX + moveDirectionX, CurY + moveDirectionY, PawnColor, DetectedPawnSameColor))
+							{
+								if (!DetectedPawnSameColor)
+								{
+									OutArray.Add(GameMode->GetCellByIndex(CurX + moveDirectionX, CurY + moveDirectionY));
+								}
+
+							}
+						}
+					}
+					else
+					{
+						if (CheckIsAvailableStep(CurX + moveDirectionX, CurY + moveDirectionY, empty))
 						{
 							OutArray.Add(GameMode->GetCellByIndex(CurX + moveDirectionX, CurY + moveDirectionY));
 						}
-
 					}
+				}
+				else
+				{
+					int32 step = 1;
+					bool isGoFurther = true;
+					while (CheckIsAvailableStep(CurX + (moveDirectionX * step), CurY + (moveDirectionY * step), isGoFurther))
+					{
+						OutArray.Add(GameMode->GetCellByIndex(CurX + (moveDirectionX * step), CurY + (moveDirectionY * step)));
+						step++;
+						if (!isGoFurther)
+						{
+							break;
+						}
+					}
+				}
+
+				break;
+
+			case MovementDirections::Left:
+				if (MovementRange == MovementRange::OneStep)
+				{
+					if (CheckIsAvailableStep(CurX - moveDirectionX, CurY, empty))
+					{
+						OutArray.Add(GameMode->GetCellByIndex(CurX - moveDirectionX, CurY));
+					}
+				}
+				else
+				{
+					int32 step = 1;
+					bool isGoFurther = true;
+					while (CheckIsAvailableStep(CurX - (moveDirectionX * step), CurY, isGoFurther))
+					{
+						OutArray.Add(GameMode->GetCellByIndex(CurX - (moveDirectionX * step), CurY));
+						step++;
+						if (!isGoFurther)
+						{
+							break;
+						}
+					}
+				}
+				break;
+
+			case MovementDirections::Back_Left:
+				if (MovementRange == MovementRange::OneStep)
+				{
+					if (CheckIsAvailableStep(CurX - moveDirectionX, CurY - moveDirectionY, empty))
+					{
+						OutArray.Add(GameMode->GetCellByIndex(CurX - moveDirectionX, CurY - moveDirectionY));
+					}
+					
+				}
+				else
+				{
+					int32 step = 1;
+					bool isGoFurther = true;
+					while (CheckIsAvailableStep(CurX - (moveDirectionX * step), CurY - (moveDirectionY * step), isGoFurther))
+					{
+						OutArray.Add(GameMode->GetCellByIndex(CurX - (moveDirectionX * step), CurY - (moveDirectionY * step)));
+						step++;
+						if (!isGoFurther)
+						{
+							break;
+						}
+					}
+				}
+				break;
+
+			case MovementDirections::Back:
+				if (MovementRange == MovementRange::OneStep)
+				{
+					if (CheckIsAvailableStep(CurX, CurY - moveDirectionY, empty))
+					{
+						OutArray.Add(GameMode->GetCellByIndex(CurX, CurY - moveDirectionY));
+					}
+					
+				}
+				else
+				{
+					int32 step = 1;
+					bool isGoFurther = true;
+					while (CheckIsAvailableStep(CurX, CurY - (moveDirectionY * step), isGoFurther))
+					{
+						OutArray.Add(GameMode->GetCellByIndex(CurX, CurY - (moveDirectionY * step)));
+						step++;
+						if (!isGoFurther)
+						{
+							break;
+						}
+					}
+				}
+				break;
+
+			case MovementDirections::Back_Right:
+				if (MovementRange == MovementRange::OneStep)
+				{
+					if (CheckIsAvailableStep(CurX + moveDirectionX, CurY - moveDirectionY, empty))
+					{
+						OutArray.Add(GameMode->GetCellByIndex(CurX + moveDirectionX, CurY - moveDirectionY));
+					}
+					
+				}
+				else
+				{
+					int32 step = 1;
+					bool isGoFurther = true;
+					while (CheckIsAvailableStep(CurX + (moveDirectionX * step), CurY - (moveDirectionY * step), isGoFurther))
+					{
+						OutArray.Add(GameMode->GetCellByIndex(CurX + (moveDirectionX * step), CurY - (moveDirectionY * step)));
+						step++;
+						if (!isGoFurther)
+						{
+							break;
+						}
+					}
+				}
+				break;
+
+			case MovementDirections::Right:
+				if (MovementRange == MovementRange::OneStep)
+				{
+					if (CheckIsAvailableStep(CurX + moveDirectionX, CurY, empty))
+					{
+						OutArray.Add(GameMode->GetCellByIndex(CurX + moveDirectionX, CurY));
+					}
+				}
+				else
+				{
+					int32 step = 1;
+					bool isGoFurther = true;
+					while (CheckIsAvailableStep(CurX + (moveDirectionX * step), CurY, isGoFurther))
+					{
+						OutArray.Add(GameMode->GetCellByIndex(CurX + (moveDirectionX * step), CurY));
+						step++;
+						if (!isGoFurther)
+						{
+							break;
+						}
+					}
+				}
+				break;
+
+			case MovementDirections::T_Forward_Right:
+				
+				if (CheckIsAvailableStep(CurX + 1, CurY +2, empty))
+				{
+					OutArray.Add(GameMode->GetCellByIndex(CurX + 1, CurY + 2));
+				}
+				break;
+
+			case MovementDirections::T_Forward_Left:
+			
+				if (CheckIsAvailableStep(CurX - 1, CurY + 2, empty))
+				{
+					OutArray.Add(GameMode->GetCellByIndex(CurX - 1, CurY + 2));
+				}
+				break;
+
+			case MovementDirections::T_Left_Right:
+			
+				if (CheckIsAvailableStep(CurX - 2, CurY + 1, empty))
+				{
+					OutArray.Add(GameMode->GetCellByIndex(CurX - 2, CurY + 1));
+				}
+				break;
+
+			case MovementDirections::T_Left_Left:
+				
+				if (CheckIsAvailableStep(CurX - 2, CurY - 1, empty))
+				{
+					OutArray.Add(GameMode->GetCellByIndex(CurX - 2, CurY - 1));
+				}
+				break;
+
+			case MovementDirections::T_Back_Right:
+			
+				if (CheckIsAvailableStep(CurX + 1, CurY - 2, empty))
+				{
+					OutArray.Add(GameMode->GetCellByIndex(CurX + 1, CurY - 2));
+				}
+				break;
+
+			case MovementDirections::T_Back_Left:
+				
+				if (CheckIsAvailableStep(CurX - 1, CurY - 2, empty))
+				{
+					OutArray.Add(GameMode->GetCellByIndex(CurX - 1, CurY - 2));
+				}
+				break;
+
+			case MovementDirections::T_Right_Right:
+				
+				if (CheckIsAvailableStep(CurX + 2, CurY - 1, empty))
+				{
+					OutArray.Add(GameMode->GetCellByIndex(CurX + 2, CurY - 1));
+				}
+				break;
+
+			case MovementDirections::T_Right_Left:
+				
+				if (CheckIsAvailableStep(CurX + 2, CurY + 1, empty))
+				{
+					OutArray.Add(GameMode->GetCellByIndex(CurX + 2, CurY + 1));
 				}
 				break;
 
@@ -186,21 +429,17 @@ bool ABasePawn::CheckIsAvailableStep(int32 X, int32 Y, bool& CanGoFurther)
 {
 	bool DetectedPawnSameColor = false;
 	ASChessGameModeBase* GameMode = Cast<ASChessGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-	if (CheckStepBorders(Y)) //(CurY + moveDirectionY <= 8 && CurY + moveDirectionY > 0)
+	if (CheckStepBorders(Y) && CheckStepBorders(X)) //(CurY + moveDirectionY <= 8 && CurY + moveDirectionY > 0)
 	{
 		if (!GameMode->IsPawnExistOnCell(X, Y, PawnColor, DetectedPawnSameColor))
 		{
 			return true;
-		}
-		if (GameMode->IsPawnExistOnCell(X, Y, PawnColor, DetectedPawnSameColor) && PawnType != PawnTypes::Pawn)
+		} 
+		else if (PawnType != PawnTypes::Pawn && !DetectedPawnSameColor)
 		{
-			if (!DetectedPawnSameColor)
-			{
-				CanGoFurther = false;
-				return true;
-			}
+			CanGoFurther = false;
+			return true;
 				
-			
 		}
 	}
 	return false;

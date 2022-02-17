@@ -110,8 +110,8 @@ void AChPawn::BeginPlay()
 	bIsFirstMove = true;
 
 	MovementPattern.Add(MovementDirections::Forward);
-	MovementPattern.Add(MovementDirections::Atack_Forward_Left);
-	MovementPattern.Add(MovementDirections::Atack_Forward_Right);
+	MovementPattern.Add(MovementDirections::Forward_Left);
+	MovementPattern.Add(MovementDirections::Forward_Right);
 
 	MovementRange = MovementRange::OneStep;
 }

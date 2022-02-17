@@ -6,6 +6,15 @@
 void AChTour::BeginPlay()
 {
 	Super::BeginPlay();
+
+	MovementPattern.Add(MovementDirections::Forward);
+	MovementPattern.Add(MovementDirections::Left);
+	MovementPattern.Add(MovementDirections::Back);
+	MovementPattern.Add(MovementDirections::Right);
+
+	MovementRange = MovementRange::Infinite;
+
+	bIsFirstMove = true;
 }
 
 void AChTour::ConfigurePawn()

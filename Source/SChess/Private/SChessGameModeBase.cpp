@@ -149,12 +149,12 @@ void ASChessGameModeBase::StartMovePawn(ABoardCell* FromCell, ABoardCell* ToCell
 			FVector loc = ToCell->GetActorLocation();
 			PawnOnPrevCell->SetActorLocation(loc);
 			PawnOnPrevCell->ConfigurePawn();
-			if (PawnOnPrevCell->PawnType == PawnTypes::Pawn)
+			/*if (PawnOnPrevCell->PawnType == PawnTypes::Pawn)
 			{
 				AChPawn* ChPawn = Cast<AChPawn>(PawnOnPrevCell);
 				ChPawn->bIsFirstMove = false;
-			}
-				
+			}*/
+			PawnOnPrevCell->bIsFirstMove = false;
 			PawnOnPrevCell->SetFoothold(ToCell);
 			ToCell->SetPawnOnCell(PawnOnPrevCell);
 			FromCell->SetPawnOnCell(nullptr);

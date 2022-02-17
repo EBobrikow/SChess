@@ -71,8 +71,6 @@ enum class MovementDirections : uint8
 	T_Back_Left,
 	T_Right_Right,
 	T_Right_Left,
-	Atack_Forward_Left,
-	Atack_Forward_Right,
 };
 
 UENUM(BlueprintType)
