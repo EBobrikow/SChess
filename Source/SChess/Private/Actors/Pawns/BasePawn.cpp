@@ -30,19 +30,17 @@ void ABasePawn::ConfigurePawn()
 	
 }
 
-TArray<ABoardCell*> ABasePawn::GetPossibleSteps()
+TArray<ABoardCell*> ABasePawn::GetPossibleSteps(bool IgnorePawnForwardMov)
 {
 	int32 CurX = 0, CurY = 0;
 	ABoardCell* Cell = GetFoohold();
-	ABoardCell* tmpCell = nullptr;
-	ABasePawn* tmpPawn = nullptr;
 	TArray<ABoardCell*> OutArray;
 	bool DetectedPawnSameColor = false;
 	int32 moveDirectionX = 0, moveDirectionY = 0;
 	bool empty = false;
 
-	moveDirectionX = (PawnColor == PawnColorType::White) ? 1 : -1;
-	moveDirectionY = (PawnColor == PawnColorType::White) ? 1 : -1;
+	moveDirectionX = moveDirectionY = (PawnColor == PawnColorType::White) ? 1 : -1;
+	//moveDirectionY = (PawnColor == PawnColorType::White) ? 1 : -1;
 	OutArray.Add(Cell);
 	ASChessGameModeBase* GameMode = Cast<ASChessGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 	Cell->GetIndex(CurX, CurY);
@@ -56,16 +54,20 @@ TArray<ABoardCell*> ABasePawn::GetPossibleSteps()
 
 				if (MovementRange == MovementRange::OneStep)
 				{
-					
-					if (CheckIsAvailableStep(CurX, CurY + moveDirectionY, empty))
+					if (!(IgnorePawnForwardMov && PawnType == PawnTypes::Pawn))
 					{
-						OutArray.Add(GameMode->GetCellByIndex(CurX, CurY + moveDirectionY));
-					}
-					if (bIsFirstMove && PawnType == PawnTypes::Pawn)
-					{
-						if (CheckIsAvailableStep(CurX, CurY + (moveDirectionY * 2), empty))
+
+
+						if (CheckIsAvailableStep(CurX, CurY + moveDirectionY, empty))
 						{
-							OutArray.Add(GameMode->GetCellByIndex(CurX, CurY + (moveDirectionY * 2)));
+							OutArray.Add(GameMode->GetCellByIndex(CurX, CurY + moveDirectionY));
+						}
+						if (bIsFirstMove && PawnType == PawnTypes::Pawn)
+						{
+							if (CheckIsAvailableStep(CurX, CurY + (moveDirectionY * 2), empty))
+							{
+								OutArray.Add(GameMode->GetCellByIndex(CurX, CurY + (moveDirectionY * 2)));
+							}
 						}
 					}
 				}
@@ -93,6 +95,14 @@ TArray<ABoardCell*> ABasePawn::GetPossibleSteps()
 				{
 					if (PawnType == PawnTypes::Pawn)
 					{
+						if ((IgnorePawnForwardMov))
+						{
+							if (CheckIsAvailableStep(CurX - moveDirectionX, CurY + moveDirectionY, empty))
+							{
+								OutArray.Add(GameMode->GetCellByIndex(CurX - moveDirectionX, CurY + moveDirectionY));
+							}
+						}
+						else
 						if (CheckStepBorders(CurX + moveDirectionX) && CheckStepBorders(CurY - moveDirectionY))
 						{
 							if (GameMode->IsPawnExistOnCell(CurX - moveDirectionX, CurY + moveDirectionY, PawnColor, DetectedPawnSameColor))
@@ -136,6 +146,14 @@ TArray<ABoardCell*> ABasePawn::GetPossibleSteps()
 				{
 					if (PawnType == PawnTypes::Pawn)
 					{
+						if ((IgnorePawnForwardMov))
+						{
+							if (CheckIsAvailableStep(CurX + moveDirectionX, CurY + moveDirectionY, empty))
+							{
+								OutArray.Add(GameMode->GetCellByIndex(CurX + moveDirectionX, CurY + moveDirectionY));
+							}
+						}
+						else
 						if (CheckStepBorders(CurX + moveDirectionX) && CheckStepBorders(CurY - moveDirectionY))
 						{
 							if (GameMode->IsPawnExistOnCell(CurX + moveDirectionX, CurY + moveDirectionY, PawnColor, DetectedPawnSameColor))
@@ -366,6 +384,7 @@ TArray<ABoardCell*> ABasePawn::GetPossibleSteps()
 		}
 	}
 
+	
 
 	return OutArray;
 }
@@ -379,6 +398,8 @@ void ABasePawn::SetFoothold(ABoardCell* footholdCell)
 {
 	Foothold = footholdCell;
 }
+
+
 
 void ABasePawn::InitFigure()
 {

@@ -81,6 +81,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UnHighlightAll();
 
+	
+	TArray<ABoardCell*> GetForbiddenCellsForKing( TEnumAsByte<PawnColorType> KingColor);
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -89,6 +92,12 @@ private:
 
 	UPROPERTY()
 	TArray<ABoardCell*> DeskArray;
+
+	UPROPERTY()
+	TArray<ABasePawn*> WhitePawns;
+
+	UPROPERTY()
+	TArray<ABasePawn*> BlackPawns;
 
 	UFUNCTION()
 	void CreateDesk();

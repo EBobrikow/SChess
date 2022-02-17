@@ -46,13 +46,14 @@ public:
 
 	virtual void ConfigurePawn();
 
-	virtual TArray<ABoardCell*> GetPossibleSteps();
+	virtual TArray<ABoardCell*> GetPossibleSteps(bool IgnorePawnForwardMov = false);
 
 	UFUNCTION(BlueprintCallable)
 	ABoardCell* GetFoohold() const;
 
 	UFUNCTION(BlueprintCallable)
 	void SetFoothold(ABoardCell* footholdCell);
+
 
 	UPROPERTY()
 	bool bIsFirstMove;

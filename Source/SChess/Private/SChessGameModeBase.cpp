@@ -131,7 +131,13 @@ void ASChessGameModeBase::StartMovePawn(ABoardCell* FromCell, ABoardCell* ToCell
 					else
 					{
 						PawnOnCurCell->SetFoothold(nullptr);
+						if (PawnOnCurCell->PawnColor == PawnColorType::White)
+							WhitePawns.Remove(PawnOnCurCell);
+						if (PawnOnCurCell->PawnColor == PawnColorType::Black)
+							BlackPawns.Remove(PawnOnCurCell);
+
 						PawnOnCurCell->Destroy();
+						
 						ToCell->SetPawnOnCell(nullptr);
 						if (GEngine)
 							GEngine->ForceGarbageCollection(true);
@@ -181,6 +187,37 @@ void ASChessGameModeBase::UnHighlightAll()
 	{
 		cell->MeshComponent->SetRenderCustomDepth(false);
 	}
+}
+
+TArray<ABoardCell*> ASChessGameModeBase::GetForbiddenCellsForKing(TEnumAsByte<PawnColorType> KingColor)
+{
+	//TSet<TPair<int32, int32>> OutSet = TSet<TPair<int32, int32>>();
+	TArray<ABasePawn*> OpositePawns;
+	TArray<ABoardCell*> tmpPawnMovement;
+	TArray<ABoardCell*> OutSet;
+	int32 tmpX = 0, tmpY = 0;
+
+	if (KingColor == PawnColorType::Black)
+	{
+		OpositePawns = WhitePawns;
+	}
+	else if (KingColor == PawnColorType::White)
+	{
+		OpositePawns = BlackPawns;
+	}
+
+	for (ABasePawn* Pawn : OpositePawns)
+	{
+		tmpPawnMovement = Pawn->GetPossibleSteps(true);
+		for (auto Cell : tmpPawnMovement)
+		{
+			//Cell->GetIndex(tmpX, tmpY);
+			OutSet.Remove(Cell);
+			OutSet.Add(Cell);
+		}
+	}
+
+	return OutSet;
 }
 
 
@@ -247,6 +284,16 @@ void ASChessGameModeBase::SpawnChessPawn(ABoardCell* CellActorOnSpawn, TSubclass
 				ChessFigure->PawnColor = PawnColor;
 				ChessFigure->SetFoothold(CellActorOnSpawn);
 				ChessFigure->InitFigure();
+
+				if (ChessFigure->PawnColor == PawnColorType::White)
+				{
+					WhitePawns.Add(ChessFigure);
+				}
+				else if (ChessFigure->PawnColor == PawnColorType::Black)
+				{
+					BlackPawns.Add(ChessFigure);
+				}
+
 			}
 		}
 
