@@ -15,6 +15,8 @@ void APlayerDefPawn::BeginPlay()
 	checkf(GameMode, TEXT("APlayerDefPawn::BeginPlay GameMode is invalid"));
 
 	bIsFisrtClick = true;
+	CurrentCellClicked = nullptr;
+	PreviosCellClicked = nullptr;
 }
 
 void APlayerDefPawn::Tick(float DeltaTime)

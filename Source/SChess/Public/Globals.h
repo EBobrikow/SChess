@@ -11,6 +11,7 @@
 UENUM(BlueprintType)
 enum class PawnTypes : uint8 
 {
+	None,
 	Pawn,
 	Bishop,
 	Horse,
@@ -49,6 +50,44 @@ public:
 	FPawnBaseLocationInfo();
 
 	FPawnBaseLocationInfo(int32 X, int32 Y, TEnumAsByte<PawnColorType> SideColor, TEnumAsByte<PawnTypes> Type);
+};
+
+USTRUCT(BlueprintType)
+struct FPawnMovementInfo
+{
+	GENERATED_BODY()
+public:
+
+	UPROPERTY(BlueprintReadWrite)
+		int32 FirstCellIndexX;
+
+	UPROPERTY(BlueprintReadWrite)
+		int32 FirstCellIndexY;
+
+	UPROPERTY(BlueprintReadWrite)
+		TEnumAsByte<PawnTypes> FirstCellPawnType;
+
+	UPROPERTY(BlueprintReadWrite)
+		TEnumAsByte<PawnColorType> FirstCellPawnColor;
+
+
+	UPROPERTY(BlueprintReadWrite)
+		int32 SecondCellIndexX;
+
+	UPROPERTY(BlueprintReadWrite)
+		int32 SecondCellIndexY;
+
+	UPROPERTY(BlueprintReadWrite)
+		TEnumAsByte<PawnTypes> SecondCellPawnType;
+
+	UPROPERTY(BlueprintReadWrite)
+		TEnumAsByte<PawnColorType> SecondCellPawnColor;
+
+	FPawnMovementInfo();
+
+	FPawnMovementInfo(int32 FCindX, int32 FCindY, TEnumAsByte<PawnTypes> FCPawnType, TEnumAsByte<PawnColorType> FCPawnColor,
+					  int32 SCindX, int32 SCindY, TEnumAsByte<PawnTypes> SCPawnType, TEnumAsByte<PawnColorType> SCPawnColor);
+
 };
 
 

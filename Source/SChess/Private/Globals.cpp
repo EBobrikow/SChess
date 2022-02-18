@@ -23,3 +23,21 @@ FPawnBaseLocationInfo::FPawnBaseLocationInfo(int32 X, int32 Y, TEnumAsByte<PawnC
 	, PawnType(Type)
 {
 }
+
+FPawnMovementInfo::FPawnMovementInfo()
+	: FPawnMovementInfo(0,0, PawnTypes::None, PawnColorType::None, 0, 0, PawnTypes::None, PawnColorType::None)
+{
+}
+
+FPawnMovementInfo::FPawnMovementInfo(int32 FCindX, int32 FCindY, TEnumAsByte<PawnTypes> FCPawnType, TEnumAsByte<PawnColorType> FCPawnColor,
+									 int32 SCindX, int32 SCindY, TEnumAsByte<PawnTypes> SCPawnType, TEnumAsByte<PawnColorType> SCPawnColor)
+	: FirstCellIndexX(FCindX)
+	, FirstCellIndexY(FCindY)
+	, FirstCellPawnType(FCPawnType)
+	, FirstCellPawnColor(FCPawnColor)
+	, SecondCellIndexX(SCindX)
+	, SecondCellIndexY(SCindY)
+	, SecondCellPawnType(SCPawnType)
+	, SecondCellPawnColor(SCPawnColor)
+{
+}

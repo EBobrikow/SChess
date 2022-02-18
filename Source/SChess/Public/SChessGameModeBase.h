@@ -5,16 +5,18 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameMode.h"
 #include "Actors/BoardCell.h"
-//#include "Actors/Pawns/BasePawn.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/Material.h"
 #include "Materials/MaterialInstance.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Globals.h"
+#include "Actors/PawnMovementLogger.h"
 #include "SChessGameModeBase.generated.h"
 
 
 #define TOTAL_FIGURES_NUM 32
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPawnMove, FPawnMovementInfo, MovementInfo);
 
 /**
  * 
@@ -25,6 +27,9 @@ class SCHESS_API ASChessGameModeBase : public AGameMode
 	GENERATED_BODY()
 
 public:
+
+	UPROPERTY()
+	FOnPawnMove OnPawnMoveDelegate;
 
 	virtual void Tick(float DeltaSeconds) override;
 
@@ -64,6 +69,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	ABoardCell* GetCellByIndex(int32 X, int32 Y) const;
+
+	UFUNCTION(BlueprintCallable)
+	void UndoLastMove();
 
 
 	UFUNCTION(BlueprintCallable)
@@ -111,6 +119,11 @@ private:
 	UPROPERTY()
 	UMaterialInstanceDynamic* DynamicHighlightMaterial = nullptr;
 
+	UPROPERTY()
+	APawnMovementLogger* MovementLogger = nullptr;
+
+	UFUNCTION()
+	TSubclassOf<ABasePawn> GetSubclassOfPawnType(TEnumAsByte<PawnTypes> Type);
 
 
 	FPawnBaseLocationInfo InitialFiguresArrangment[TOTAL_FIGURES_NUM] = {
