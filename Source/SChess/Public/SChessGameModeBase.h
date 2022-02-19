@@ -125,6 +125,11 @@ private:
 	UFUNCTION()
 	TSubclassOf<ABasePawn> GetSubclassOfPawnType(TEnumAsByte<PawnTypes> Type);
 
+	UFUNCTION()
+	void PostMoveCheck(ABoardCell* FinalCell);
+
+	bool CheckState = false;
+
 
 	FPawnBaseLocationInfo InitialFiguresArrangment[TOTAL_FIGURES_NUM] = {
 	FPawnBaseLocationInfo(1,1,PawnColorType::White, PawnTypes::Tour) ,

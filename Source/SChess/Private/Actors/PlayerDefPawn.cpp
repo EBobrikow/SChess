@@ -52,17 +52,19 @@ void APlayerDefPawn::FirstClick()
 		if (CurrentCellClicked->GetPawnOnCell())
 		{
 			AvailableCells = CurrentCellClicked->GetPawnOnCell()->GetPossibleSteps();
-		}
 
-		if (CurrentCellClicked->GetPawnOnCell()->PawnType == PawnTypes::King)
-		{
-			TArray<ABoardCell*> tmpCells = GameMode->GetForbiddenCellsForKing(CurrentCellClicked->GetPawnOnCell()->PawnColor);
-
-			for (auto tmpCell : tmpCells)
+			if (CurrentCellClicked->GetPawnOnCell()->PawnType == PawnTypes::King)
 			{
-				AvailableCells.Remove(tmpCell);
+				TArray<ABoardCell*> tmpCells = GameMode->GetForbiddenCellsForKing(CurrentCellClicked->GetPawnOnCell()->PawnColor);
+
+				for (auto tmpCell : tmpCells)
+				{
+					AvailableCells.Remove(tmpCell);
+				}
 			}
 		}
+
+		
 
 		if (AvailableCells.Num() > 0)
 		{

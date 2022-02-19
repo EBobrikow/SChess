@@ -40,8 +40,9 @@ TArray<ABoardCell*> ABasePawn::GetPossibleSteps(bool IgnorePawnForwardMov)
 	bool empty = false;
 
 	moveDirectionX = moveDirectionY = (PawnColor == PawnColorType::White) ? 1 : -1;
-	//moveDirectionY = (PawnColor == PawnColorType::White) ? 1 : -1;
-	OutArray.Add(Cell);
+	/*if (!IgnorePawnForwardMov)
+		OutArray.Add(Cell);*/
+
 	ASChessGameModeBase* GameMode = Cast<ASChessGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 	Cell->GetIndex(CurX, CurY);
 	if (GameMode)
@@ -95,15 +96,15 @@ TArray<ABoardCell*> ABasePawn::GetPossibleSteps(bool IgnorePawnForwardMov)
 				{
 					if (PawnType == PawnTypes::Pawn)
 					{
-						if ((IgnorePawnForwardMov))
+						/*if ((IgnorePawnForwardMov))
 						{
 							if (CheckIsAvailableStep(CurX - moveDirectionX, CurY + moveDirectionY, empty))
 							{
 								OutArray.Add(GameMode->GetCellByIndex(CurX - moveDirectionX, CurY + moveDirectionY));
 							}
 						}
-						else
-						if (CheckStepBorders(CurX + moveDirectionX) && CheckStepBorders(CurY - moveDirectionY))
+						else*/
+						if (CheckStepBorders(CurX - moveDirectionX) && CheckStepBorders(CurY + moveDirectionY))
 						{
 							if (GameMode->IsPawnExistOnCell(CurX - moveDirectionX, CurY + moveDirectionY, PawnColor, DetectedPawnSameColor))
 							{
@@ -146,15 +147,15 @@ TArray<ABoardCell*> ABasePawn::GetPossibleSteps(bool IgnorePawnForwardMov)
 				{
 					if (PawnType == PawnTypes::Pawn)
 					{
-						if ((IgnorePawnForwardMov))
+						/*if ((IgnorePawnForwardMov))
 						{
 							if (CheckIsAvailableStep(CurX + moveDirectionX, CurY + moveDirectionY, empty))
 							{
 								OutArray.Add(GameMode->GetCellByIndex(CurX + moveDirectionX, CurY + moveDirectionY));
 							}
 						}
-						else
-						if (CheckStepBorders(CurX + moveDirectionX) && CheckStepBorders(CurY - moveDirectionY))
+						else*/
+						if (CheckStepBorders(CurX + moveDirectionX) && CheckStepBorders(CurY + moveDirectionY))
 						{
 							if (GameMode->IsPawnExistOnCell(CurX + moveDirectionX, CurY + moveDirectionY, PawnColor, DetectedPawnSameColor))
 							{

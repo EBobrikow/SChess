@@ -105,6 +105,7 @@ void ASChessGameModeBase::UndoLastMove()
 		FVector loc = FirstCell->GetActorLocation();
 		tmpPawn->SetActorLocation(loc);
 		tmpPawn->ConfigurePawn();
+		tmpPawn->bIsFirstMove = MoveInfo.FirstCellIsFirstMove;
 		tmpPawn->SetFoothold(FirstCell);
 		FirstCell->SetPawnOnCell(tmpPawn);
 		SecondCell->SetPawnOnCell(nullptr);
@@ -112,6 +113,7 @@ void ASChessGameModeBase::UndoLastMove()
 		if (MoveInfo.SecondCellPawnType != PawnTypes::None && MoveInfo.SecondCellPawnColor != PawnColorType::None)
 		{
 			SpawnChessPawn(SecondCell,GetSubclassOfPawnType(MoveInfo.SecondCellPawnType), MoveInfo.SecondCellPawnColor);
+			SecondCell->GetPawnOnCell()->bIsFirstMove = MoveInfo.SecondCellIsFirstMove;
 		}
 	}
 }
@@ -161,6 +163,7 @@ void ASChessGameModeBase::StartMovePawn(ABoardCell* FromCell, ABoardCell* ToCell
 			MoveInfo.FirstCellPawnColor = PawnOnPrevCell->PawnColor;
 			MoveInfo.FirstCellPawnType = PawnOnPrevCell->PawnType;
 			ToCell->GetIndex(MoveInfo.SecondCellIndexX, MoveInfo.SecondCellIndexY);
+			MoveInfo.FirstCellIsFirstMove = PawnOnPrevCell->bIsFirstMove;
 
 			if (PawnOnCurCell )
 			{
@@ -176,6 +179,7 @@ void ASChessGameModeBase::StartMovePawn(ABoardCell* FromCell, ABoardCell* ToCell
 						
 						MoveInfo.SecondCellPawnColor = PawnOnCurCell->PawnColor;
 						MoveInfo.SecondCellPawnType = PawnOnCurCell->PawnType;
+						MoveInfo.SecondCellIsFirstMove = PawnOnCurCell->bIsFirstMove;
 
 						PawnOnCurCell->SetFoothold(nullptr);
 						if (PawnOnCurCell->PawnColor == PawnColorType::White)
@@ -220,6 +224,8 @@ void ASChessGameModeBase::StartMovePawn(ABoardCell* FromCell, ABoardCell* ToCell
 				OnPawnMoveDelegate.Broadcast(MoveInfo);
 			}
 
+			PostMoveCheck(ToCell);
+
 		}
 	}
 }
@@ -249,7 +255,6 @@ TArray<ABoardCell*> ASChessGameModeBase::GetForbiddenCellsForKing(TEnumAsByte<Pa
 	TArray<ABasePawn*> OpositePawns;
 	TArray<ABoardCell*> tmpPawnMovement;
 	TArray<ABoardCell*> OutSet;
-	int32 tmpX = 0, tmpY = 0;
 
 	if (KingColor == PawnColorType::Black)
 	{
@@ -364,29 +369,6 @@ void ASChessGameModeBase::InitStartupArragment()
 	{
 		tempInfo = InitialFiguresArrangment[i];
 		tempPawnClass = GetSubclassOfPawnType(tempInfo.PawnType);
-		/*switch (tempInfo.PawnType)
-		{
-		case PawnTypes::Pawn:
-			tempPawnClass = ChessPawnClass;
-			break;
-		case PawnTypes::Bishop:
-			tempPawnClass = ChessBishopClass;
-			break;
-		case PawnTypes::King:
-			tempPawnClass = ChessKingClass;
-			break;
-		case PawnTypes::Tour:
-			tempPawnClass = ChessTourClass;
-			break;
-		case PawnTypes::Horse:
-			tempPawnClass = ChessHorseClass;
-			break;
-		case PawnTypes::Queen:
-			tempPawnClass = ChessQueenClass;
-			break;
-		default:
-			break;
-		}*/
 
 		tempCell = GetCellByIndex(tempInfo.IndexX, tempInfo.IndexY);
 		if (tempCell && tempPawnClass)
@@ -421,6 +403,50 @@ TSubclassOf<ABasePawn> ASChessGameModeBase::GetSubclassOfPawnType(TEnumAsByte<Pa
 		break;
 	}
 	return TSubclassOf<ABasePawn>();
+}
+
+void ASChessGameModeBase::PostMoveCheck(ABoardCell* FinalCell)
+{
+	//FinalCell->GetPawnOnCell()->PawnColor == PawnColorType::Black ? PawnColorType::Black : PawnColorType::White
+	TArray<ABoardCell*>  PossibleSteps = GetForbiddenCellsForKing(PawnColorType::Black);
+
+	for (auto Cell : PossibleSteps)
+	{
+		if (Cell->GetPawnOnCell() && Cell->GetPawnOnCell()->PawnType == PawnTypes::King && Cell->GetPawnOnCell()->PawnColor == PawnColorType::Black)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Check!"));
+			if (CheckState)
+				UndoLastMove();
+			else
+				CheckState = true;
+
+			return;
+			
+			
+		}
+	}
+
+	PossibleSteps.Empty();
+
+	PossibleSteps = GetForbiddenCellsForKing(PawnColorType::White);
+
+	for (auto Cell : PossibleSteps)
+	{
+		if (Cell->GetPawnOnCell() && Cell->GetPawnOnCell()->PawnType == PawnTypes::King) //&& Cell->GetPawnOnCell()->PawnColor != PawnColorType::White)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Check!"));
+			if (CheckState)
+				UndoLastMove();
+			else
+				CheckState = true;
+			return;
+
+
+		}
+	}
+
+	CheckState = false;
+
 }
 
 

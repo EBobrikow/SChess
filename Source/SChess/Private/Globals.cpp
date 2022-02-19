@@ -25,19 +25,21 @@ FPawnBaseLocationInfo::FPawnBaseLocationInfo(int32 X, int32 Y, TEnumAsByte<PawnC
 }
 
 FPawnMovementInfo::FPawnMovementInfo()
-	: FPawnMovementInfo(0,0, PawnTypes::None, PawnColorType::None, 0, 0, PawnTypes::None, PawnColorType::None)
+	: FPawnMovementInfo(0,0, PawnTypes::None, PawnColorType::None, false, 0, 0, PawnTypes::None, PawnColorType::None, false)
 {
 }
 
-FPawnMovementInfo::FPawnMovementInfo(int32 FCindX, int32 FCindY, TEnumAsByte<PawnTypes> FCPawnType, TEnumAsByte<PawnColorType> FCPawnColor,
-									 int32 SCindX, int32 SCindY, TEnumAsByte<PawnTypes> SCPawnType, TEnumAsByte<PawnColorType> SCPawnColor)
+FPawnMovementInfo::FPawnMovementInfo(int32 FCindX, int32 FCindY, TEnumAsByte<PawnTypes> FCPawnType, TEnumAsByte<PawnColorType> FCPawnColor, bool FCIsFirstMove,
+									 int32 SCindX, int32 SCindY, TEnumAsByte<PawnTypes> SCPawnType, TEnumAsByte<PawnColorType> SCPawnColor, bool SCIsFirstMove)
 	: FirstCellIndexX(FCindX)
 	, FirstCellIndexY(FCindY)
 	, FirstCellPawnType(FCPawnType)
 	, FirstCellPawnColor(FCPawnColor)
+	, FirstCellIsFirstMove(FCIsFirstMove)
 	, SecondCellIndexX(SCindX)
 	, SecondCellIndexY(SCindY)
 	, SecondCellPawnType(SCPawnType)
 	, SecondCellPawnColor(SCPawnColor)
+	, SecondCellIsFirstMove(SCIsFirstMove)
 {
 }

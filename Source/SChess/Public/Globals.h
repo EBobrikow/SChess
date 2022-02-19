@@ -59,34 +59,40 @@ struct FPawnMovementInfo
 public:
 
 	UPROPERTY(BlueprintReadWrite)
-		int32 FirstCellIndexX;
+	int32 FirstCellIndexX;
 
 	UPROPERTY(BlueprintReadWrite)
-		int32 FirstCellIndexY;
+	int32 FirstCellIndexY;
 
 	UPROPERTY(BlueprintReadWrite)
-		TEnumAsByte<PawnTypes> FirstCellPawnType;
+	TEnumAsByte<PawnTypes> FirstCellPawnType;
 
 	UPROPERTY(BlueprintReadWrite)
-		TEnumAsByte<PawnColorType> FirstCellPawnColor;
+	TEnumAsByte<PawnColorType> FirstCellPawnColor;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool FirstCellIsFirstMove;
 
 
 	UPROPERTY(BlueprintReadWrite)
-		int32 SecondCellIndexX;
+	int32 SecondCellIndexX;
 
 	UPROPERTY(BlueprintReadWrite)
-		int32 SecondCellIndexY;
+	int32 SecondCellIndexY;
 
 	UPROPERTY(BlueprintReadWrite)
-		TEnumAsByte<PawnTypes> SecondCellPawnType;
+	TEnumAsByte<PawnTypes> SecondCellPawnType;
 
 	UPROPERTY(BlueprintReadWrite)
-		TEnumAsByte<PawnColorType> SecondCellPawnColor;
+	TEnumAsByte<PawnColorType> SecondCellPawnColor;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool SecondCellIsFirstMove;
 
 	FPawnMovementInfo();
 
-	FPawnMovementInfo(int32 FCindX, int32 FCindY, TEnumAsByte<PawnTypes> FCPawnType, TEnumAsByte<PawnColorType> FCPawnColor,
-					  int32 SCindX, int32 SCindY, TEnumAsByte<PawnTypes> SCPawnType, TEnumAsByte<PawnColorType> SCPawnColor);
+	FPawnMovementInfo(int32 FCindX, int32 FCindY, TEnumAsByte<PawnTypes> FCPawnType, TEnumAsByte<PawnColorType> FCPawnColor, bool FCIsFirstMove,
+					  int32 SCindX, int32 SCindY, TEnumAsByte<PawnTypes> SCPawnType, TEnumAsByte<PawnColorType> SCPawnColor, bool SCIsFirstMove);
 
 };
 
