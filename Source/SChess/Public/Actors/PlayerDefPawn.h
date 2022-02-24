@@ -23,6 +23,9 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+
+	APlayerDefPawn();
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

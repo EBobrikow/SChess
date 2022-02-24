@@ -27,26 +27,33 @@ public:
 
 
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated)
 	TEnumAsByte<PawnTypes> PawnType;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated)
 	UStaticMesh* PawnMesh;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated)
 	UMaterialInstance* PawnMeshWhiteMaterial;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated)
 	UMaterialInstance* PawnMeshBlackMaterial;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, ReplicatedUsing = OnRep_PawnColor)
 	TEnumAsByte<PawnColorType> PawnColor;
 
-	virtual void InitFigure();
+	UFUNCTION(BlueprintCallable, Server, Reliable)
+	void InitFigure();
+
+	UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
+	void SetColor();
 
 	virtual void ConfigurePawn();
 
 	virtual TArray<ABoardCell*> GetPossibleSteps(bool IgnorePawnForwardMov = false);
+
+	/*UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
+	void U_InitFigure();*/
 
 	UFUNCTION(BlueprintCallable)
 	ABoardCell* GetFoohold() const;
@@ -54,8 +61,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetFoothold(ABoardCell* footholdCell);
 
+	UFUNCTION()
+	void OnRep_PawnColor();
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	bool bIsFirstMove;
 
 protected:
@@ -70,11 +79,14 @@ protected:
 	UPROPERTY()
 	TEnumAsByte<MovementRange> MovementRange;
 	
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	ABoardCell* Foothold;
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	UStaticMeshComponent* MeshComponent;
+
+	UPROPERTY(Replicated)
+	UMaterialInstanceDynamic* DynamicMat;
 
 public:	
 	// Called every frame

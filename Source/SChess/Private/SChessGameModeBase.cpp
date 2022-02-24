@@ -15,12 +15,12 @@ void ASChessGameModeBase::BeginPlay()
 	CreateDesk();
 	InitStartupArragment();
 
-	APlayerController* PlayerControl = UGameplayStatics::GetPlayerController(this, 0);
+	/*APlayerController* PlayerControl = UGameplayStatics::GetPlayerController(this, 0);
 	if (PlayerControl)
 	{
 		PlayerControl->bShowMouseCursor = true;
 		PlayerControl->SetInputMode(FInputModeGameAndUI());
-	}
+	}*/
 
 	FVector Location(0.0f, 0.0f, 0.0f);
 	FRotator Rotation(0.0f, 0.0f, 0.0f);
@@ -342,6 +342,7 @@ void ASChessGameModeBase::SpawnChessPawn(ABoardCell* CellActorOnSpawn, TSubclass
 				ChessFigure->PawnColor = PawnColor;
 				ChessFigure->SetFoothold(CellActorOnSpawn);
 				ChessFigure->InitFigure();
+				//ChessFigure->SetColor();
 
 				if (ChessFigure->PawnColor == PawnColorType::White)
 				{

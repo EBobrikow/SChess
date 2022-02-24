@@ -12,11 +12,27 @@ void APlayerDefPawn::BeginPlay()
 	Super::BeginPlay();
 
 	GameMode = Cast<ASChessGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-	checkf(GameMode, TEXT("APlayerDefPawn::BeginPlay GameMode is invalid"));
+	//checkf(GameMode, TEXT("APlayerDefPawn::BeginPlay GameMode is invalid"));
 
 	bIsFisrtClick = true;
 	CurrentCellClicked = nullptr;
 	PreviosCellClicked = nullptr;
+
+	APlayerController* PlayerControl = UGameplayStatics::GetPlayerController(GetOwner(), 0); 
+	if (PlayerControl)
+	{
+		PlayerControl->bShowMouseCursor = true;
+		PlayerControl->SetInputMode(FInputModeGameAndUI());
+	}
+
+	
+
+}
+
+APlayerDefPawn::APlayerDefPawn()
+{
+	bReplicates = true;
+	SetReplicateMovement(true);
 }
 
 void APlayerDefPawn::Tick(float DeltaTime)
@@ -119,7 +135,7 @@ void APlayerDefPawn::SecondClick()
 /*Return a chess cell that was clicked*/
 ABoardCell* APlayerDefPawn::GetClickedCell()
 {
-	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
+	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetOwner(), 0);
 	if (PlayerController)
 	{
 		FHitResult HitResult;

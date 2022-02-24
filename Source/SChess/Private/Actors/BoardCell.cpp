@@ -3,6 +3,7 @@
 
 #include "Actors/BoardCell.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 ABoardCell::ABoardCell()
@@ -15,6 +16,7 @@ ABoardCell::ABoardCell()
 	{
 		RootComponent = MeshComponent;
 		//MeshComponent->SetupAttachment(RootComponent);
+		MeshComponent->SetIsReplicated(true);
 	}
 
 	//const ConstructorHelpers::FObjectFinder<UStaticMesh> MeshObj(TEXT("/Engine/BasicShapes/Plane.Plane")); //
@@ -24,6 +26,16 @@ ABoardCell::ABoardCell()
 	//	MeshComponent->SetStaticMesh(StaticMesh);
 	//}
 
+	bReplicates = true;
+	
+
+}
+
+void ABoardCell::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ABoardCell, PawnOnCell);
 }
 
 void ABoardCell::SetActorMesh(UStaticMesh* Mesh)

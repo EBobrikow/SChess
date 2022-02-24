@@ -59,7 +59,7 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	int32 IndexY;
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	ABasePawn* PawnOnCell = nullptr;
 
 };

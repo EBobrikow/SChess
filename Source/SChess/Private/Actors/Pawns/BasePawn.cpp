@@ -1,7 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
+
 #include "Actors/Pawns/BasePawn.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 ABasePawn::ABasePawn()
@@ -13,9 +15,25 @@ ABasePawn::ABasePawn()
 	if (MeshComponent)
 	{
 		RootComponent = MeshComponent;
+		MeshComponent->SetIsReplicated(true);
 	}
 	
 	//MeshComponent->SetupAttachment(RootComponent); 
+	bReplicates = true;
+}
+
+void ABasePawn::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ABasePawn, PawnColor);
+	DOREPLIFETIME(ABasePawn, PawnType);
+	DOREPLIFETIME(ABasePawn, PawnMeshWhiteMaterial);
+	DOREPLIFETIME(ABasePawn, PawnMeshBlackMaterial);
+	DOREPLIFETIME(ABasePawn, Foothold);
+	DOREPLIFETIME(ABasePawn, bIsFirstMove);
+	DOREPLIFETIME(ABasePawn, DynamicMat);
+	DOREPLIFETIME(ABasePawn, MeshComponent);
 }
 
 // Called when the game starts or when spawned
@@ -23,6 +41,23 @@ void ABasePawn::BeginPlay()
 {
 	Super::BeginPlay();
 	
+}
+
+void ABasePawn::SetColor_Implementation()
+{
+	if (PawnColor == PawnColorType::Black && PawnMeshBlackMaterial)
+	{
+		//DynamicMat = UMaterialInstanceDynamic::Create(PawnMeshBlackMaterial, this);
+		this->MeshComponent->SetMaterial(0, PawnMeshBlackMaterial);
+		MeshComponent->SetIsReplicated(true);
+	}
+	else if (PawnColor == PawnColorType::White && PawnMeshWhiteMaterial)
+	{
+		//DynamicMat = UMaterialInstanceDynamic::Create(PawnMeshWhiteMaterial, this);
+		this->MeshComponent->SetMaterial(0, PawnMeshWhiteMaterial);
+		MeshComponent->SetIsReplicated(true);
+	}
+		
 }
 
 void ABasePawn::ConfigurePawn()
@@ -389,6 +424,11 @@ TArray<ABoardCell*> ABasePawn::GetPossibleSteps(bool IgnorePawnForwardMov)
 
 	return OutArray;
 }
+//
+//void ABasePawn::U_InitFigure()
+//{
+//	InitFigure();
+//}
 
 ABoardCell* ABasePawn::GetFoohold() const
 {
@@ -400,27 +440,41 @@ void ABasePawn::SetFoothold(ABoardCell* footholdCell)
 	Foothold = footholdCell;
 }
 
+void ABasePawn::OnRep_PawnColor()
+{
+	SetColor();
+}
 
 
-void ABasePawn::InitFigure()
+
+void ABasePawn::InitFigure_Implementation()
 {
 	
 	if (PawnMesh)
 	{
+		/*if (PawnColor == PawnColorType::Black && PawnMeshBlackMaterial)
+		{
+			this->MeshComponent->SetMaterial(0, PawnMeshBlackMaterial);
+			MeshComponent->SetIsReplicated(true);
+		}
+		else if (PawnColor == PawnColorType::White && PawnMeshWhiteMaterial)
+		{
+			this->MeshComponent->SetMaterial(0, PawnMeshWhiteMaterial);
+			MeshComponent->SetIsReplicated(true);
+		}*/
+
 		if (MeshComponent)
 		{
 			MeshComponent->SetStaticMesh(PawnMesh);
-		
+			//MeshComponent->SetIsReplicated(true);
 		}
-
-		if (PawnColor == PawnColorType::Black && PawnMeshBlackMaterial)
+		const ENetMode NetMode = GetNetMode();
+		if (NetMode == NM_ListenServer)
 		{
-			
-			MeshComponent->SetMaterial(0, PawnMeshBlackMaterial);
+			OnRep_PawnColor();
 		}
-			
-		else if(PawnColor == PawnColorType::White && PawnMeshWhiteMaterial)
-			MeshComponent->SetMaterial(0, PawnMeshWhiteMaterial);
+		//SetColor();
+		
 
 		MeshComponent->BodyInstance.SetCollisionProfileName("Pawn");
 	}
