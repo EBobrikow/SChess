@@ -52,8 +52,6 @@ public:
 
 	virtual TArray<ABoardCell*> GetPossibleSteps(bool IgnorePawnForwardMov = false);
 
-	/*UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
-	void U_InitFigure();*/
 
 	UFUNCTION(BlueprintCallable)
 	ABoardCell* GetFoohold() const;

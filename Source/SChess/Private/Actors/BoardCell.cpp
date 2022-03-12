@@ -15,16 +15,10 @@ ABoardCell::ABoardCell()
 	if (MeshComponent)
 	{
 		RootComponent = MeshComponent;
-		//MeshComponent->SetupAttachment(RootComponent);
 		MeshComponent->SetIsReplicated(true);
 	}
 
-	//const ConstructorHelpers::FObjectFinder<UStaticMesh> MeshObj(TEXT("/Engine/BasicShapes/Plane.Plane")); //
-	//if (MeshObj.Succeeded() && MeshComponent)
-	//{
-	//	StaticMesh = MeshObj.Object;
-	//	MeshComponent->SetStaticMesh(StaticMesh);
-	//}
+
 
 	bReplicates = true;
 	
@@ -36,6 +30,9 @@ void ABoardCell::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLife
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ABoardCell, PawnOnCell);
+	DOREPLIFETIME(ABoardCell, IndexX);
+	DOREPLIFETIME(ABoardCell, IndexY);
+	DOREPLIFETIME(ABoardCell, MeshComponent);
 }
 
 void ABoardCell::SetActorMesh(UStaticMesh* Mesh)
@@ -56,8 +53,9 @@ void ABoardCell::SetActorMeshMaterial(UMaterial* Material)
 	if (Material && StaticMesh && MeshComponent)
 	{
 		
-		StaticMesh->SetMaterial(0, Material);
+		//StaticMesh->SetMaterial(0, Material);
 		MeshComponent->SetStaticMesh(StaticMesh);
+		MeshComponent->SetMaterial(0, Material);
 	}
 		
 

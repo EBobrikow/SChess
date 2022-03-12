@@ -19,7 +19,7 @@ public:
 	// Sets default values for this actor's properties
 	ABoardCell();
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated)
 	UStaticMeshComponent* MeshComponent;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
@@ -53,10 +53,10 @@ public:
 
 private: 
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Replicated)
 	int32 IndexX;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Replicated)
 	int32 IndexY;
 
 	UPROPERTY(Replicated)

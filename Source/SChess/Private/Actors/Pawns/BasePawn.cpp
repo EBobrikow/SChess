@@ -131,14 +131,6 @@ TArray<ABoardCell*> ABasePawn::GetPossibleSteps(bool IgnorePawnForwardMov)
 				{
 					if (PawnType == PawnTypes::Pawn)
 					{
-						/*if ((IgnorePawnForwardMov))
-						{
-							if (CheckIsAvailableStep(CurX - moveDirectionX, CurY + moveDirectionY, empty))
-							{
-								OutArray.Add(GameMode->GetCellByIndex(CurX - moveDirectionX, CurY + moveDirectionY));
-							}
-						}
-						else*/
 						if (CheckStepBorders(CurX - moveDirectionX) && CheckStepBorders(CurY + moveDirectionY))
 						{
 							if (GameMode->IsPawnExistOnCell(CurX - moveDirectionX, CurY + moveDirectionY, PawnColor, DetectedPawnSameColor))
@@ -182,14 +174,6 @@ TArray<ABoardCell*> ABasePawn::GetPossibleSteps(bool IgnorePawnForwardMov)
 				{
 					if (PawnType == PawnTypes::Pawn)
 					{
-						/*if ((IgnorePawnForwardMov))
-						{
-							if (CheckIsAvailableStep(CurX + moveDirectionX, CurY + moveDirectionY, empty))
-							{
-								OutArray.Add(GameMode->GetCellByIndex(CurX + moveDirectionX, CurY + moveDirectionY));
-							}
-						}
-						else*/
 						if (CheckStepBorders(CurX + moveDirectionX) && CheckStepBorders(CurY + moveDirectionY))
 						{
 							if (GameMode->IsPawnExistOnCell(CurX + moveDirectionX, CurY + moveDirectionY, PawnColor, DetectedPawnSameColor))
@@ -424,11 +408,7 @@ TArray<ABoardCell*> ABasePawn::GetPossibleSteps(bool IgnorePawnForwardMov)
 
 	return OutArray;
 }
-//
-//void ABasePawn::U_InitFigure()
-//{
-//	InitFigure();
-//}
+
 
 ABoardCell* ABasePawn::GetFoohold() const
 {
@@ -452,28 +432,16 @@ void ABasePawn::InitFigure_Implementation()
 	
 	if (PawnMesh)
 	{
-		/*if (PawnColor == PawnColorType::Black && PawnMeshBlackMaterial)
-		{
-			this->MeshComponent->SetMaterial(0, PawnMeshBlackMaterial);
-			MeshComponent->SetIsReplicated(true);
-		}
-		else if (PawnColor == PawnColorType::White && PawnMeshWhiteMaterial)
-		{
-			this->MeshComponent->SetMaterial(0, PawnMeshWhiteMaterial);
-			MeshComponent->SetIsReplicated(true);
-		}*/
 
 		if (MeshComponent)
 		{
 			MeshComponent->SetStaticMesh(PawnMesh);
-			//MeshComponent->SetIsReplicated(true);
 		}
 		const ENetMode NetMode = GetNetMode();
 		if (NetMode == NM_ListenServer)
 		{
 			OnRep_PawnColor();
 		}
-		//SetColor();
 		
 
 		MeshComponent->BodyInstance.SetCollisionProfileName("Pawn");
@@ -505,7 +473,7 @@ bool ABasePawn::CheckIsAvailableStep(int32 X, int32 Y, bool& CanGoFurther)
 {
 	bool DetectedPawnSameColor = false;
 	ASChessGameModeBase* GameMode = Cast<ASChessGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-	if (CheckStepBorders(Y) && CheckStepBorders(X)) //(CurY + moveDirectionY <= 8 && CurY + moveDirectionY > 0)
+	if (CheckStepBorders(Y) && CheckStepBorders(X)) 
 	{
 		if (!GameMode->IsPawnExistOnCell(X, Y, PawnColor, DetectedPawnSameColor))
 		{

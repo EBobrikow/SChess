@@ -5,6 +5,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 
 
 void APlayerDefPawn::BeginPlay()
@@ -24,10 +25,19 @@ void APlayerDefPawn::BeginPlay()
 		PlayerControl->bShowMouseCursor = true;
 		PlayerControl->SetInputMode(FInputModeGameAndUI());
 	}
-
 	
 
 }
+
+void APlayerDefPawn::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(APlayerDefPawn, bIsFisrtClick);
+	DOREPLIFETIME(APlayerDefPawn, AvailableCells);
+
+}
+
 
 APlayerDefPawn::APlayerDefPawn()
 {
@@ -49,49 +59,62 @@ void APlayerDefPawn::OnMouseClicked()
 
 }
 
+void APlayerDefPawn::UnHighlight_Implementation()
+{
+	ASChessGameModeBase* GM = Cast<ASChessGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (GM)
+		GM->UnHighlightAll();
+}
+
+
+
+void APlayerDefPawn::OnRep_AvailableCells_Implementation(/*TMap<int32, int32> Cells*/)
+{
+	//int32 FoundX = 0, FoundY = 0;
+	//ABoardCell* tmpCell = nullptr;
+	//TArray<AActor*> FoundActors;
+	////UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABoardCell::StaticClass(), FoundActors);
+
+	//for (auto FoundCell : FoundActors)
+	//{
+	//	tmpCell = Cast<ABoardCell>(FoundCell);
+	//	if (tmpCell)
+	//	{
+	//		tmpCell->GetIndex(FoundX, FoundY);
+	//		for (auto index : Cells)
+	//		{
+	//			if (index.Key == FoundX && index.Value == FoundY)
+	//			{
+	//				tmpCell->MeshComponent->SetRenderCustomDepth(true);
+	//				break;
+	//			}
+	//		}
+	//	}
+	//}
+
+	if (AvailableCells.Num() > 0)
+	{
+		for (auto cell : AvailableCells)
+		{
+			cell->MeshComponent->SetRenderCustomDepth(true);
+		}
+		bIsFisrtClick = false;
+	}
+}
+
 /*If there is pawn on cell, show possible cells to move*/
 void APlayerDefPawn::FirstClick()
 {
 
 	CurrentCellClicked = GetClickedCell();
-
+	int32 X = 0, Y = 0;
 	if (CurrentCellClicked)
 	{
-
-		if (GEngine)
-		{
-			FString msg = "";
-			CurrentCellClicked->GetName(msg);//FString::Printf(TEXT(""));
-			GEngine->AddOnScreenDebugMessage(1, 5.0f, FColor::Yellow, msg);
-		}
-
-		if (CurrentCellClicked->GetPawnOnCell())
-		{
-			AvailableCells = CurrentCellClicked->GetPawnOnCell()->GetPossibleSteps();
-
-			if (CurrentCellClicked->GetPawnOnCell()->PawnType == PawnTypes::King)
-			{
-				TArray<ABoardCell*> tmpCells = GameMode->GetForbiddenCellsForKing(CurrentCellClicked->GetPawnOnCell()->PawnColor);
-
-				for (auto tmpCell : tmpCells)
-				{
-					AvailableCells.Remove(tmpCell);
-				}
-			}
-		}
-
-		
-
-		if (AvailableCells.Num() > 0)
-		{
-			for (auto cell : AvailableCells)
-			{
-				cell->MeshComponent->SetRenderCustomDepth(true);
-			}
-			bIsFisrtClick = false;
-		}
-
+		CurrentCellClicked->GetIndex(X, Y);
+		FirstClickCall(X, Y);
 	}
+	
+
 }
 
 /*Finish moving chess pawn*/
@@ -100,12 +123,79 @@ void APlayerDefPawn::SecondClick()
 	int32 X = 0, Y = 0, CurX = 0, CurY = 0;
 
 	PreviosCellClicked = CurrentCellClicked;
-	CurrentCellClicked = CurrentCellClicked = GetClickedCell();
+	CurrentCellClicked  = GetClickedCell();
+	if (PreviosCellClicked && CurrentCellClicked)
+	{
+		PreviosCellClicked->GetIndex(X, Y);
+		CurrentCellClicked->GetIndex(CurX, CurY);
+
+		SecondClickCall(X, Y, CurX, CurY);
+	}
 	
+
+	
+	Clean();
+	bIsFisrtClick = true;
+}
+
+void APlayerDefPawn::FirstClickCall_Implementation(int32 CellX, int32 CellY)
+{
+	int32 X = 0, Y = 0;
+	GameMode = Cast<ASChessGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	ABoardCell* LocalCell = GameMode->GetCellByIndex(CellX, CellY);
+	if (LocalCell)
+	{
+
+		if (GEngine)
+		{
+			FString msg = "";
+			LocalCell->GetName(msg);//FString::Printf(TEXT(""));
+			GEngine->AddOnScreenDebugMessage(1, 5.0f, FColor::Yellow, msg);
+		}
+
+		if (LocalCell->GetPawnOnCell())
+		{
+			AvailableCells = LocalCell->GetPawnOnCell()->GetPossibleSteps();
+
+			if (LocalCell->GetPawnOnCell()->PawnType == PawnTypes::King)
+			{
+				TArray<ABoardCell*> tmpCells = GameMode->GetForbiddenCellsForKing(LocalCell->GetPawnOnCell()->PawnColor);
+
+				for (auto tmpCell : tmpCells)
+				{
+					AvailableCells.Remove(tmpCell);
+				}
+			}
+		}
+
+		TMap<int32, int32> Indexes = TMap<int32, int32>();
+		
+
+		if (AvailableCells.Num() > 0)
+		{
+			for (auto cell : AvailableCells)
+			{
+				cell->GetIndex(X, Y);
+				Indexes.Add(X,Y);
+				//cell->MeshComponent->SetRenderCustomDepth(true);
+			}
+			OnRep_AvailableCells();
+			bIsFisrtClick = false;
+		}
+
+	}
+}
+
+void APlayerDefPawn::SecondClickCall_Implementation(int32 FCellX, int32 FCellY, int32 SCellX, int32 SCellY)
+{
+	int32 X = 0, Y = 0;
+	GameMode = Cast<ASChessGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	PreviosCellClicked = GameMode->GetCellByIndex(FCellX, FCellY);
+	CurrentCellClicked = GameMode->GetCellByIndex(SCellX, SCellY);
 
 	if (CurrentCellClicked && PreviosCellClicked && PreviosCellClicked != CurrentCellClicked)
 	{
-		CurrentCellClicked->GetIndex(CurX, CurY);
+		//CurrentCellClicked->GetIndex(CurX, CurY);
 		if (GameMode)
 		{
 			if (AvailableCells.Num() > 0)
@@ -113,7 +203,7 @@ void APlayerDefPawn::SecondClick()
 				for (auto cell : AvailableCells)
 				{
 					cell->GetIndex(X, Y);
-					if (X == CurX && Y == CurY)
+					if (X == SCellX && Y == SCellY)
 					{
 						GameMode->StartMovePawn(PreviosCellClicked, CurrentCellClicked);
 						Clean();
@@ -128,8 +218,6 @@ void APlayerDefPawn::SecondClick()
 
 		}
 	}
-	Clean();
-	bIsFisrtClick = true;
 }
 
 /*Return a chess cell that was clicked*/
@@ -156,6 +244,6 @@ void APlayerDefPawn::Clean()
 {
 	PreviosCellClicked = nullptr;
 	CurrentCellClicked = nullptr;
-	GameMode->UnHighlightAll();
+	UnHighlight();
 	AvailableCells.Empty();
 }
