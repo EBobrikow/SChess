@@ -22,6 +22,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FPawnMovementInfo GetLastMovementInfo() const;
 
+	UFUNCTION(BlueprintCallable)
+	void RemoveLastMove();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

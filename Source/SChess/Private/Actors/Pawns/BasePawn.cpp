@@ -34,6 +34,12 @@ void ABasePawn::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifet
 	DOREPLIFETIME(ABasePawn, bIsFirstMove);
 	DOREPLIFETIME(ABasePawn, DynamicMat);
 	DOREPLIFETIME(ABasePawn, MeshComponent);
+	DOREPLIFETIME(ABasePawn, PawnMesh);
+}
+
+UStaticMeshComponent* ABasePawn::GetMeshComponent() const
+{
+	return MeshComponent;
 }
 
 // Called when the game starts or when spawned

@@ -26,6 +26,14 @@ FPawnMovementInfo APawnMovementLogger::GetLastMovementInfo() const
 	return FPawnMovementInfo();
 }
 
+void APawnMovementLogger::RemoveLastMove()
+{
+	if (MovementLogList.Num() > 0)
+	{
+		MovementLogList.RemoveAt(MovementLogList.Num() - 1);
+	}
+}
+
 // Called when the game starts or when spawned
 void APawnMovementLogger::BeginPlay()
 {

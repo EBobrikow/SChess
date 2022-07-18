@@ -6,6 +6,7 @@
 #include "Engine/PostProcessVolume.h"
 #include "Kismet/KismetMaterialLibrary.h"
 #include "Actors/Pawns/ChPawn.h"
+#include "ChBasePlayerController.h"
 
 
 void ASChessGameModeBase::BeginPlay()
@@ -31,6 +32,25 @@ void ASChessGameModeBase::BeginPlay()
 		OnPawnMoveDelegate.AddDynamic(MovementLogger,&APawnMovementLogger::LogPawnMovement);
 	}
 
+	OnMoveEndDelegate.AddDynamic(this, &ASChessGameModeBase::OnMoveEndEvent);
+	OnPlayersConnectedDelegate.AddDynamic(this, &ASChessGameModeBase::OnPlayersReady);
+	
+
+	CurrentPawnsMove = PawnColorType::White;
+}
+
+void ASChessGameModeBase::PostLogin(APlayerController* NewPlayer)
+{
+	Super::PostLogin(NewPlayer);
+
+	PlayerControllerList.Add(NewPlayer);
+	if (PlayerControllerList.Num() == 2)
+	{
+		if (OnPlayersConnectedDelegate.IsBound())
+		{
+			OnPlayersConnectedDelegate.Broadcast();
+		}
+	}
 }
 
 
@@ -115,6 +135,7 @@ void ASChessGameModeBase::UndoLastMove()
 			SpawnChessPawn(SecondCell,GetSubclassOfPawnType(MoveInfo.SecondCellPawnType), MoveInfo.SecondCellPawnColor);
 			SecondCell->GetPawnOnCell()->bIsFirstMove = MoveInfo.SecondCellIsFirstMove;
 		}
+		MovementLogger->RemoveLastMove();
 	}
 }
 
@@ -278,6 +299,16 @@ TArray<ABoardCell*> ASChessGameModeBase::GetForbiddenCellsForKing(TEnumAsByte<Pa
 	return OutSet;
 }
 
+TEnumAsByte<PawnColorType> ASChessGameModeBase::GetCurrentPawnsMove() const
+{
+	return CurrentPawnsMove;
+}
+
+void ASChessGameModeBase::SetCurrentPawnsMove(TEnumAsByte<PawnColorType> CurrentPawns)
+{
+	CurrentPawnsMove = CurrentPawns;
+}
+
 
 
 void ASChessGameModeBase::CreateDesk()
@@ -378,6 +409,26 @@ void ASChessGameModeBase::InitStartupArragment()
 	}
 }
 
+void ASChessGameModeBase::OnMoveEndEvent()
+{
+	CurrentPawnsMove = GetCurrentPawnsMove() == PawnColorType::White ? PawnColorType::Black : PawnColorType::White;
+}
+
+void ASChessGameModeBase::OnPlayersReady()
+{
+	AChBasePlayerController* pl1 = Cast<AChBasePlayerController>(PlayerControllerList[0]);
+	if (pl1)
+	{
+		pl1->SetControlledPawnsColor(PawnColorType::White);
+	}
+
+	AChBasePlayerController* pl2 = Cast<AChBasePlayerController>(PlayerControllerList[1]);
+	if (pl2)
+	{
+		pl2->SetControlledPawnsColor(PawnColorType::Black);
+	}
+}
+
 TSubclassOf<ABasePawn> ASChessGameModeBase::GetSubclassOfPawnType(TEnumAsByte<PawnTypes> Type)
 {
 	switch (Type)
@@ -447,6 +498,11 @@ void ASChessGameModeBase::PostMoveCheck(ABoardCell* FinalCell)
 	}
 
 	CheckState = false;
+
+	if (OnMoveEndDelegate.IsBound())
+	{
+		OnMoveEndDelegate.Broadcast();
+	}
 
 }
 

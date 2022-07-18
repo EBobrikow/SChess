@@ -19,7 +19,7 @@ ABoardCell::ABoardCell()
 	}
 
 
-
+	bIsHighlighted = false;
 	bReplicates = true;
 	
 
@@ -33,6 +33,7 @@ void ABoardCell::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLife
 	DOREPLIFETIME(ABoardCell, IndexX);
 	DOREPLIFETIME(ABoardCell, IndexY);
 	DOREPLIFETIME(ABoardCell, MeshComponent);
+	DOREPLIFETIME(ABoardCell, bIsHighlighted);
 }
 
 void ABoardCell::SetActorMesh(UStaticMesh* Mesh)
@@ -101,5 +102,10 @@ void ABoardCell::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void ABoardCell::OnRep_IsHighlighted()
+{
+	MeshComponent->SetRenderCustomDepth(bIsHighlighted);
 }
 

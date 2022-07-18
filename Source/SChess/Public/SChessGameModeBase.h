@@ -17,6 +17,8 @@
 #define TOTAL_FIGURES_NUM 32
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPawnMove, FPawnMovementInfo, MovementInfo);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMoveEnd);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayersConnected);
 
 /**
  * 
@@ -31,7 +33,13 @@ public:
 	UPROPERTY()
 	FOnPawnMove OnPawnMoveDelegate;
 
-	virtual void Tick(float DeltaSeconds) override;
+	UPROPERTY()
+	FOnMoveEnd OnMoveEndDelegate;
+
+	UPROPERTY()
+		FOnPlayersConnected OnPlayersConnectedDelegate;
+
+	
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	UStaticMesh* BoardCellBlackMesh;
@@ -89,12 +97,24 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UnHighlightAll();
 
+	UFUNCTION(BlueprintCallable)
+	TEnumAsByte<PawnColorType> GetCurrentPawnsMove() const;
+
+	UFUNCTION(BlueprintCallable)
+	void SetCurrentPawnsMove(TEnumAsByte<PawnColorType> CurrentPawns);
+
+	TArray<ABoardCell*> GetForbiddenCellsForKing(TEnumAsByte<PawnColorType> KingColor);
 	
-	TArray<ABoardCell*> GetForbiddenCellsForKing( TEnumAsByte<PawnColorType> KingColor);
 
 protected:
 
 	virtual void BeginPlay() override;
+
+	virtual void Tick(float DeltaSeconds) override;
+	
+	virtual void PostLogin(APlayerController* NewPlayer) override;
+
+	TArray<class APlayerController*> PlayerControllerList;
 
 private: 
 
@@ -107,6 +127,21 @@ private:
 	UPROPERTY()
 	TArray<ABasePawn*> BlackPawns;
 
+	UPROPERTY()
+	UMaterialInstanceDynamic* DynamicHighlightMaterial = nullptr;
+
+	UPROPERTY()
+	APawnMovementLogger* MovementLogger = nullptr;
+
+	UPROPERTY()
+	TEnumAsByte<PawnColorType> CurrentPawnsMove;
+
+	UFUNCTION()
+	TSubclassOf<ABasePawn> GetSubclassOfPawnType(TEnumAsByte<PawnTypes> Type);
+
+	UFUNCTION()
+	void PostMoveCheck(ABoardCell* FinalCell);
+
 	UFUNCTION()
 	void CreateDesk();
 
@@ -116,19 +151,16 @@ private:
 	UFUNCTION()
 	void InitStartupArragment();
 
-	UPROPERTY()
-	UMaterialInstanceDynamic* DynamicHighlightMaterial = nullptr;
-
-	UPROPERTY()
-	APawnMovementLogger* MovementLogger = nullptr;
+	UFUNCTION()
+	void OnMoveEndEvent();
 
 	UFUNCTION()
-	TSubclassOf<ABasePawn> GetSubclassOfPawnType(TEnumAsByte<PawnTypes> Type);
-
-	UFUNCTION()
-	void PostMoveCheck(ABoardCell* FinalCell);
+	void OnPlayersReady();
 
 	bool CheckState = false;
+
+
+	
 
 
 	FPawnBaseLocationInfo InitialFiguresArrangment[TOTAL_FIGURES_NUM] = {

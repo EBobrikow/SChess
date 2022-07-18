@@ -45,7 +45,7 @@ public:
 
 private:
 
-	UFUNCTION(Client, Reliable)
+	UFUNCTION(NetMulticast, Reliable)
 	void OnRep_AvailableCells(/*TMap<int32,int32> Cells*/);
 
 	UFUNCTION()
@@ -66,7 +66,7 @@ private:
 	UFUNCTION()
 	void Clean();
 
-	UPROPERTY(Replicated)
+	UPROPERTY(Replicated/*ReplicatedUsing = OnRep_AvailableCells*/)
 	TArray<ABoardCell*> AvailableCells;
 
 	UPROPERTY()

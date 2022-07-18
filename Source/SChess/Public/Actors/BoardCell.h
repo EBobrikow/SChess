@@ -43,6 +43,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	ABasePawn* GetPawnOnCell() const;
 
+	UPROPERTY(ReplicatedUsing = OnRep_IsHighlighted)
+	bool bIsHighlighted;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -53,6 +56,9 @@ public:
 
 private: 
 
+	UFUNCTION()
+	void OnRep_IsHighlighted();
+
 	UPROPERTY(VisibleAnywhere, Replicated)
 	int32 IndexX;
 
@@ -61,5 +67,7 @@ private:
 
 	UPROPERTY(Replicated)
 	ABasePawn* PawnOnCell = nullptr;
+
+	
 
 };
