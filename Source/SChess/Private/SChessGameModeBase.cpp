@@ -34,7 +34,7 @@ void ASChessGameModeBase::BeginPlay()
 
 	OnMoveEndDelegate.AddDynamic(this, &ASChessGameModeBase::OnMoveEndEvent);
 	OnPlayersConnectedDelegate.AddDynamic(this, &ASChessGameModeBase::OnPlayersReady);
-	
+	OnCheckDeclaredDelegate.AddDynamic(this, &ASChessGameModeBase::OnCheckDeclaredEvent);
 
 	CurrentPawnsMove = PawnColorType::White;
 }
@@ -136,6 +136,8 @@ void ASChessGameModeBase::UndoLastMove()
 			SecondCell->GetPawnOnCell()->bIsFirstMove = MoveInfo.SecondCellIsFirstMove;
 		}
 		MovementLogger->RemoveLastMove();
+
+		CurrentPawnsMove = CurrentPawnsMove == PawnColorType::White ? PawnColorType::Black : PawnColorType::White;
 	}
 }
 
@@ -257,6 +259,8 @@ bool ASChessGameModeBase::IsPawnExistOnCell(int32 X, int32 Y, TEnumAsByte<PawnCo
 	if (tmpPawn)
 	{
 		IsSameColor = tmpPawn->PawnColor == PawnColor;
+		tmpPawn->isPawnProtected = IsSameColor;
+		
 		return true;
 	}	
 	else
@@ -277,14 +281,7 @@ TArray<ABoardCell*> ASChessGameModeBase::GetForbiddenCellsForKing(TEnumAsByte<Pa
 	TArray<ABoardCell*> tmpPawnMovement;
 	TArray<ABoardCell*> OutSet;
 
-	if (KingColor == PawnColorType::Black)
-	{
-		OpositePawns = WhitePawns;
-	}
-	else if (KingColor == PawnColorType::White)
-	{
-		OpositePawns = BlackPawns;
-	}
+	OpositePawns = KingColor == PawnColorType::Black ? WhitePawns : BlackPawns;
 
 	for (ABasePawn* Pawn : OpositePawns)
 	{
@@ -294,10 +291,123 @@ TArray<ABoardCell*> ASChessGameModeBase::GetForbiddenCellsForKing(TEnumAsByte<Pa
 			OutSet.Remove(Cell);
 			OutSet.Add(Cell);
 		}
+		
+		if (Pawn->isPawnProtected)
+		{
+			OutSet.Remove(Pawn->GetFoohold());
+			OutSet.Add(Pawn->GetFoohold());
+		}
+		
 	}
+
 
 	return OutSet;
 }
+
+bool ASChessGameModeBase::KingCanEscape(ABasePawn* PawnDeclaredCheck)
+{
+	TArray<ABoardCell*> ForbidenCells;
+	TArray<ABoardCell*> AvaliableCells;
+	TArray<ABoardCell*> tmpCells;
+	TEnumAsByte<PawnColorType> KingColor = PawnDeclaredCheck->PawnColor == PawnColorType::White ? PawnColorType::Black : PawnColorType::White;
+	ABasePawn* king = GetKingCell(KingColor)->GetPawnOnCell();
+	tmpCells = king->GetPossibleSteps();
+
+	UpdatePawnsProtectionState(PawnDeclaredCheck->PawnColor);
+
+	for (auto Cell : tmpCells)
+	{
+		if (!Cell->GetPawnOnCell()->isPawnProtected)
+		{
+			AvaliableCells.Add(Cell);	
+		}
+	}
+
+	if (AvaliableCells.Num() == 0)
+		return false;
+
+	ForbidenCells = GetForbiddenCellsForKing(KingColor);
+
+	for (auto Cell : AvaliableCells)
+	{
+		
+		for (auto forbidenCell : ForbidenCells)
+		{
+			AvaliableCells.Remove(forbidenCell);
+		}
+	}
+
+	return AvaliableCells.Num() > 0;
+}
+
+bool ASChessGameModeBase::ThreatCanBeRemoved(ABasePawn* PawnDeclaredCheck)
+{
+	TArray<ABoardCell*> PawnAvailableCells;
+	TArray<ABasePawn*> OpositePawns = PawnDeclaredCheck->PawnColor == PawnColorType::White ? BlackPawns : WhitePawns;
+
+	for (ABasePawn* Pawn : OpositePawns)
+	{
+		if (Pawn->PawnType == PawnTypes::King && PawnDeclaredCheck->isPawnProtected)
+		{
+			continue;
+		}
+
+		PawnAvailableCells.Empty();
+		PawnAvailableCells = Pawn->GetPossibleSteps();
+		for (ABoardCell* Cell : PawnAvailableCells)
+		{
+			if (Cell == PawnDeclaredCheck->GetFoohold())
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+bool ASChessGameModeBase::KingCanBeProtected(ABasePawn* PawnDeclaredCheck)
+{
+	PawnColorType kingColor = PawnDeclaredCheck->PawnColor == PawnColorType::White ? PawnColorType::Black : PawnColorType::White;
+	ABasePawn* King = GetKingCell(kingColor)->GetPawnOnCell();
+	TArray<ABoardCell*> tmpArr = King->GetCellsBetweenPawns(PawnDeclaredCheck);
+	TArray<ABoardCell*> moves;
+	TArray<ABasePawn*> KingPawns = kingColor == PawnColorType::White ?  WhitePawns : BlackPawns;
+
+	for (ABasePawn* Pawn : KingPawns)
+	{
+		if (Pawn == King)
+		{
+			continue;
+		}
+
+		moves.Empty();
+		moves = Pawn->GetPossibleSteps();
+		for (ABoardCell* PawnMoveCell : moves)
+		{
+			for (ABoardCell* BetweenCell : tmpArr)
+			{
+				if (PawnMoveCell == BetweenCell)
+				{
+					return true;
+				}
+			}
+		}
+
+	}
+
+	return false;
+}
+
+void ASChessGameModeBase::UpdatePawnsProtectionState(TEnumAsByte<PawnColorType> PawnsColor)
+{
+	TArray<ABasePawn*> SamePawns = PawnsColor == PawnColorType::White ? WhitePawns : BlackPawns;
+	for (ABasePawn* Pawn : SamePawns)
+	{
+		Pawn->GetPossibleSteps();
+	}
+}
+
 
 TEnumAsByte<PawnColorType> ASChessGameModeBase::GetCurrentPawnsMove() const
 {
@@ -308,8 +418,6 @@ void ASChessGameModeBase::SetCurrentPawnsMove(TEnumAsByte<PawnColorType> Current
 {
 	CurrentPawnsMove = CurrentPawns;
 }
-
-
 
 void ASChessGameModeBase::CreateDesk()
 {
@@ -429,6 +537,102 @@ void ASChessGameModeBase::OnPlayersReady()
 	}
 }
 
+ABoardCell* ASChessGameModeBase::GetKingCell(TEnumAsByte<PawnColorType> KingColor)
+{
+	TArray<ABasePawn*> AllPawns;
+	AllPawns = KingColor == PawnColorType::Black ?  BlackPawns : WhitePawns;
+
+	for (ABasePawn* Pawn : AllPawns)
+	{
+		if (Pawn->PawnType == PawnTypes::King)
+		{
+			return Pawn->GetFoohold();
+		}
+	}
+
+	return nullptr;
+}
+
+ABasePawn* ASChessGameModeBase::GetPawnDeclaredCheckForKing(TEnumAsByte<PawnColorType> KingColor)
+{
+	TArray<ABasePawn*> AllPawns;
+	TArray<ABoardCell*> PossibleSteps;
+	AllPawns = KingColor == PawnColorType::Black ? WhitePawns : BlackPawns;
+
+	for (ABasePawn* Pawn : AllPawns)
+	{
+		PossibleSteps.Empty();
+		PossibleSteps = Pawn->GetPossibleSteps(true);
+
+		for (ABoardCell* Cell : PossibleSteps)
+		{
+			if (!Cell->GetPawnOnCell()) // if there is no pawn on cell skip this cell
+			{
+				continue;
+			}
+			else
+			{
+				if (Cell->GetPawnOnCell()->PawnType == PawnTypes::King && Cell->GetPawnOnCell()->PawnColor == KingColor)
+				{
+					return Pawn;
+				}
+			}
+		}
+
+	}
+
+	return nullptr;
+}
+
+bool ASChessGameModeBase::CheckExamination(TEnumAsByte<PawnColorType> KingColor)
+{
+	TArray<ABoardCell*>  PossibleSteps = GetForbiddenCellsForKing(KingColor);
+
+	for (auto Cell : PossibleSteps)
+	{
+		if (Cell->GetPawnOnCell() && Cell->GetPawnOnCell()->PawnType == PawnTypes::King && Cell->GetPawnOnCell()->PawnColor == KingColor)
+		{
+
+			if (CheckState)
+				UndoLastMove();
+			else
+				CheckState = true;
+
+			if (OnCheckDeclaredDelegate.IsBound())
+			{
+				OnCheckDeclaredDelegate.Broadcast(GetPawnDeclaredCheckForKing(KingColor));
+			}
+
+			return true;
+
+
+		}
+	}
+	
+	return false;
+}
+
+void ASChessGameModeBase::OnCheckDeclaredEvent(ABasePawn* PawnDeclaredCheck)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Check!"));
+	ABasePawn* King = GetKingCell(PawnDeclaredCheck->PawnColor == PawnColorType::White ? PawnColorType::Black : PawnColorType::White)->GetPawnOnCell();
+
+	auto tmpArr = King->GetCellsBetweenPawns(PawnDeclaredCheck);
+	bool canBeProtected = KingCanBeProtected(PawnDeclaredCheck);
+
+	if (!KingCanEscape(PawnDeclaredCheck) && !ThreatCanBeRemoved(PawnDeclaredCheck) && !KingCanBeProtected(PawnDeclaredCheck))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Check&Mate!"));
+	}
+
+	if (OnMoveEndDelegate.IsBound())
+	{
+		OnMoveEndDelegate.Broadcast();
+	}
+}
+
+
+
 TSubclassOf<ABasePawn> ASChessGameModeBase::GetSubclassOfPawnType(TEnumAsByte<PawnTypes> Type)
 {
 	switch (Type)
@@ -459,43 +663,9 @@ TSubclassOf<ABasePawn> ASChessGameModeBase::GetSubclassOfPawnType(TEnumAsByte<Pa
 
 void ASChessGameModeBase::PostMoveCheck(ABoardCell* FinalCell)
 {
-	//FinalCell->GetPawnOnCell()->PawnColor == PawnColorType::Black ? PawnColorType::Black : PawnColorType::White
-	TArray<ABoardCell*>  PossibleSteps = GetForbiddenCellsForKing(PawnColorType::Black);
 
-	for (auto Cell : PossibleSteps)
-	{
-		if (Cell->GetPawnOnCell() && Cell->GetPawnOnCell()->PawnType == PawnTypes::King && Cell->GetPawnOnCell()->PawnColor == PawnColorType::Black)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Check!"));
-			if (CheckState)
-				UndoLastMove();
-			else
-				CheckState = true;
-
-			return;
-			
-			
-		}
-	}
-
-	PossibleSteps.Empty();
-
-	PossibleSteps = GetForbiddenCellsForKing(PawnColorType::White);
-
-	for (auto Cell : PossibleSteps)
-	{
-		if (Cell->GetPawnOnCell() && Cell->GetPawnOnCell()->PawnType == PawnTypes::King) //&& Cell->GetPawnOnCell()->PawnColor != PawnColorType::White)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Check!"));
-			if (CheckState)
-				UndoLastMove();
-			else
-				CheckState = true;
-			return;
-
-
-		}
-	}
+	if (CheckExamination(PawnColorType::Black)) return;
+	if (CheckExamination(PawnColorType::White)) return;
 
 	CheckState = false;
 

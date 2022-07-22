@@ -42,6 +42,12 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, ReplicatedUsing = OnRep_PawnColor)
 	TEnumAsByte<PawnColorType> PawnColor;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	bool isPawnProtected = false;
+
+	UPROPERTY(Replicated)
+	bool bIsFirstMove;
+
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 	void InitFigure();
 
@@ -52,7 +58,6 @@ public:
 
 	virtual TArray<ABoardCell*> GetPossibleSteps(bool IgnorePawnForwardMov = false);
 
-
 	UFUNCTION(BlueprintCallable)
 	ABoardCell* GetFoohold() const;
 
@@ -62,11 +67,11 @@ public:
 	UFUNCTION()
 	void OnRep_PawnColor();
 
-	UPROPERTY(Replicated)
-	bool bIsFirstMove;
-
 	UFUNCTION()
 	UStaticMeshComponent* GetMeshComponent() const;
+
+	UFUNCTION()
+	TArray<ABoardCell*> GetCellsBetweenPawns(ABasePawn* OtherPawn);
 
 protected:
 	// Called when the game starts or when spawned

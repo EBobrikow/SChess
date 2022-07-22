@@ -16,9 +16,10 @@
 
 #define TOTAL_FIGURES_NUM 32
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPawnMove, FPawnMovementInfo, MovementInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMoveEnd);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayersConnected);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPawnMove, FPawnMovementInfo, MovementInfo);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCheckDeclared, ABasePawn*, PawnDeclaredCheck);
 
 /**
  * 
@@ -37,9 +38,10 @@ public:
 	FOnMoveEnd OnMoveEndDelegate;
 
 	UPROPERTY()
-		FOnPlayersConnected OnPlayersConnectedDelegate;
+	FOnPlayersConnected OnPlayersConnectedDelegate;
 
-	
+	UPROPERTY()
+	FOnCheckDeclared OnCheckDeclaredDelegate;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	UStaticMesh* BoardCellBlackMesh;
@@ -156,6 +158,30 @@ private:
 
 	UFUNCTION()
 	void OnPlayersReady();
+
+	UFUNCTION()
+	ABoardCell* GetKingCell(TEnumAsByte<PawnColorType> KingColor);
+
+	UFUNCTION()
+	ABasePawn* GetPawnDeclaredCheckForKing(TEnumAsByte<PawnColorType> KingColor);
+
+	UFUNCTION()
+	bool CheckExamination(TEnumAsByte<PawnColorType> KingColor);
+
+	UFUNCTION()
+	void OnCheckDeclaredEvent(ABasePawn* PawnDeclaredCheck);
+
+	UFUNCTION()
+	bool KingCanEscape(ABasePawn* PawnDeclaredCheck);
+
+	UFUNCTION()
+	bool ThreatCanBeRemoved(ABasePawn* PawnDeclaredCheck);
+
+	UFUNCTION()
+	bool KingCanBeProtected(ABasePawn* PawnDeclaredCheck);
+
+	UFUNCTION()
+	void UpdatePawnsProtectionState(TEnumAsByte<PawnColorType> PawnsColor);
 
 	bool CheckState = false;
 

@@ -42,6 +42,97 @@ UStaticMeshComponent* ABasePawn::GetMeshComponent() const
 	return MeshComponent;
 }
 
+TArray<ABoardCell*> ABasePawn::GetCellsBetweenPawns(ABasePawn* OtherPawn)
+{
+
+	TArray<ABoardCell*> Output = TArray<ABoardCell*>();
+	int32 FPawnX = 0, FPawnY = 0, SPawnX = 0, SPawnY = 0;
+	if (PawnType == PawnTypes::Horse || OtherPawn->PawnType == PawnTypes::Horse
+		|| PawnType == PawnTypes::Pawn || OtherPawn->PawnType == PawnTypes::Pawn) // there ara no cells between pawn ang horse atack tragectory
+		return Output;
+
+	GetFoohold()->GetIndex(FPawnX, FPawnY);
+	OtherPawn->GetFoohold()->GetIndex(SPawnX, SPawnY);
+
+	ASChessGameModeBase* GameMode = Cast<ASChessGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+
+	if (FPawnX == SPawnX) //Straight-vertical
+	{
+
+		int32 start = 0, end = 0;
+		(FPawnY > SPawnY) ? (start = SPawnY) : (start = FPawnY);
+		(FPawnY > SPawnY) ? (end = FPawnY) : (end = SPawnY);
+
+		for (int32 Y = start; Y < end; Y++)
+		{
+			Output.Add(GameMode->GetCellByIndex(FPawnX, Y));
+		}
+
+
+	}
+	else if (FPawnY == SPawnY) //Straight-horizontal
+	{
+		int32 start = 0, end = 0;
+		(FPawnX > SPawnX) ? (start = SPawnX) : (start = FPawnX);
+		(FPawnX > SPawnX) ? (end = FPawnX) : (end = SPawnX);
+
+		for (int32 X = start; X < end; X++)
+		{
+			Output.Add(GameMode->GetCellByIndex(X, FPawnY));
+		}
+	}
+	else if ((FPawnX - SPawnX) == (FPawnY - SPawnY)) // cross-right
+	{
+		int32 startX = 0, startY = 0, difference = 0;
+		if (FPawnY > SPawnY)
+		{
+			difference = FPawnY - SPawnY;
+			startX = SPawnX;
+			startY = SPawnY;
+		}
+		else
+		{
+			difference = SPawnY - FPawnY;
+			startX = FPawnX;
+			startY = FPawnY;
+		}
+
+		for (int32 i = 1; i < difference; i++)
+		{
+			Output.Add(GameMode->GetCellByIndex(startX + i, startY + i));
+		}
+
+	}
+	else // cross-left
+	{
+		int32 startX = 0, startY = 0, difference = 0;
+
+
+		if (FPawnX > SPawnX)
+		{
+			difference = FPawnX - SPawnX;
+			startX = SPawnX;
+			startY = SPawnY;
+		}
+		else
+		{
+			difference = SPawnX - FPawnX;
+			startX = FPawnX;
+			startY = FPawnY;
+		}
+
+		for (int32 i = 1; i < difference; i++)
+		{
+			Output.Add(GameMode->GetCellByIndex(startX + i, startY - i));
+		}
+
+	}
+
+
+
+	return Output;
+}
+
 // Called when the game starts or when spawned
 void ABasePawn::BeginPlay()
 {
@@ -442,6 +533,7 @@ void ABasePawn::InitFigure_Implementation()
 		if (MeshComponent)
 		{
 			MeshComponent->SetStaticMesh(PawnMesh);
+			MeshComponent->BodyInstance.SetCollisionProfileName("Pawn");
 		}
 		const ENetMode NetMode = GetNetMode();
 		if (NetMode == NM_ListenServer)
@@ -449,8 +541,6 @@ void ABasePawn::InitFigure_Implementation()
 			OnRep_PawnColor();
 		}
 		
-
-		MeshComponent->BodyInstance.SetCollisionProfileName("Pawn");
 	}
 	
 	ConfigurePawn();

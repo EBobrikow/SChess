@@ -131,6 +131,7 @@ void APlayerDefPawn::SecondClick()
 void APlayerDefPawn::FirstClickCall_Implementation(int32 CellX, int32 CellY)
 {
 	int32 X = 0, Y = 0;
+	TArray<ABoardCell*> ProtectedCells;
 	GameMode = Cast<ASChessGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 	AChBasePlayerController* pl1 = Cast<AChBasePlayerController>(GetController());
 	if (pl1)
@@ -165,6 +166,22 @@ void APlayerDefPawn::FirstClickCall_Implementation(int32 CellX, int32 CellY)
 				{
 					AvailableCells.Remove(tmpCell);
 				}
+
+				/*for (auto Cell : AvailableCells)
+				{
+					if (ABasePawn* localPawn = Cell->GetPawnOnCell())
+					{
+						if (localPawn->isPawnProtected)
+						{
+							ProtectedCells.Add(Cell);
+						}
+					}
+				}
+
+				for (auto cell : ProtectedCells)
+				{
+					AvailableCells.Remove(cell);
+				}*/
 			}
 		}
 		
@@ -210,6 +227,7 @@ void APlayerDefPawn::SecondClickCall_Implementation(int32 FCellX, int32 FCellY, 
 
 		}
 	}
+	bIsFisrtClick = true;
 }
 
 /*Return a chess cell that was clicked*/
