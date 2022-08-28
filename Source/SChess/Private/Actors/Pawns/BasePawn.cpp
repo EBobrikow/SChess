@@ -172,8 +172,6 @@ TArray<ABoardCell*> ABasePawn::GetPossibleSteps(bool IgnorePawnForwardMov)
 	bool empty = false;
 
 	moveDirectionX = moveDirectionY = (PawnColor == PawnColorType::White) ? 1 : -1;
-	/*if (!IgnorePawnForwardMov)
-		OutArray.Add(Cell);*/
 
 	ASChessGameModeBase* GameMode = Cast<ASChessGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 	Cell->GetIndex(CurX, CurY);

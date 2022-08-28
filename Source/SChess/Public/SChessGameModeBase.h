@@ -11,6 +11,7 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Globals.h"
 #include "Actors/PawnMovementLogger.h"
+#include "UI/LoadingWidget.h"
 #include "SChessGameModeBase.generated.h"
 
 
@@ -18,6 +19,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMoveEnd);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayersConnected);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCheckMateDeclared);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPawnMove, FPawnMovementInfo, MovementInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCheckDeclared, ABasePawn*, PawnDeclaredCheck);
 
@@ -42,6 +44,9 @@ public:
 
 	UPROPERTY()
 	FOnCheckDeclared OnCheckDeclaredDelegate;
+
+	UPROPERTY()
+	FOnCheckMateDeclared OnCheckMateDeclaredDelegate;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	UStaticMesh* BoardCellBlackMesh;
@@ -106,6 +111,11 @@ public:
 	void SetCurrentPawnsMove(TEnumAsByte<PawnColorType> CurrentPawns);
 
 	TArray<ABoardCell*> GetForbiddenCellsForKing(TEnumAsByte<PawnColorType> KingColor);
+
+	//Widget
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<ULoadingWidget> LoadingWidgetClass;
 	
 
 protected:
@@ -119,6 +129,9 @@ protected:
 	TArray<class APlayerController*> PlayerControllerList;
 
 private: 
+
+	UPROPERTY()
+	ULoadingWidget* LoadingWidget;
 
 	UPROPERTY()
 	TArray<ABoardCell*> DeskArray;
@@ -170,6 +183,9 @@ private:
 
 	UFUNCTION()
 	void OnCheckDeclaredEvent(ABasePawn* PawnDeclaredCheck);
+
+	UFUNCTION()
+	void OnCheckMateDeclaredEvent();
 
 	UFUNCTION()
 	bool KingCanEscape(ABasePawn* PawnDeclaredCheck);

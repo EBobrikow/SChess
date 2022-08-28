@@ -6,6 +6,9 @@
 #include "Engine/PostProcessVolume.h"
 #include "Kismet/KismetMaterialLibrary.h"
 #include "Actors/Pawns/ChPawn.h"
+#include <cstdlib>
+#include "time.h"
+#include "Actors/PlayerDefPawn.h"
 #include "ChBasePlayerController.h"
 
 
@@ -13,8 +16,7 @@ void ASChessGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	CreateDesk();
-	InitStartupArragment();
+	
 
 	/*APlayerController* PlayerControl = UGameplayStatics::GetPlayerController(this, 0);
 	if (PlayerControl)
@@ -35,8 +37,20 @@ void ASChessGameModeBase::BeginPlay()
 	OnMoveEndDelegate.AddDynamic(this, &ASChessGameModeBase::OnMoveEndEvent);
 	OnPlayersConnectedDelegate.AddDynamic(this, &ASChessGameModeBase::OnPlayersReady);
 	OnCheckDeclaredDelegate.AddDynamic(this, &ASChessGameModeBase::OnCheckDeclaredEvent);
+	OnCheckMateDeclaredDelegate.AddDynamic(this, &ASChessGameModeBase::OnCheckMateDeclaredEvent);
 
 	CurrentPawnsMove = PawnColorType::White;
+
+	if (LoadingWidgetClass)
+	{
+		LoadingWidget = CreateWidget<ULoadingWidget>(GetWorld(), LoadingWidgetClass);
+		if (LoadingWidget)
+		{
+			LoadingWidget->AddToViewport();
+		}
+	}
+
+	
 }
 
 void ASChessGameModeBase::PostLogin(APlayerController* NewPlayer)
@@ -241,6 +255,7 @@ void ASChessGameModeBase::StartMovePawn(ABoardCell* FromCell, ABoardCell* ToCell
 			PawnOnPrevCell->SetFoothold(ToCell);
 			ToCell->SetPawnOnCell(PawnOnPrevCell);
 			FromCell->SetPawnOnCell(nullptr);
+			PawnOnPrevCell->isPawnProtected = false;
 
 			if (OnPawnMoveDelegate.IsBound())
 			{
@@ -259,7 +274,11 @@ bool ASChessGameModeBase::IsPawnExistOnCell(int32 X, int32 Y, TEnumAsByte<PawnCo
 	if (tmpPawn)
 	{
 		IsSameColor = tmpPawn->PawnColor == PawnColor;
-		tmpPawn->isPawnProtected = IsSameColor;
+		if (IsSameColor)
+		{
+			tmpPawn->isPawnProtected = true;
+		}
+		
 		
 		return true;
 	}	
@@ -524,16 +543,33 @@ void ASChessGameModeBase::OnMoveEndEvent()
 
 void ASChessGameModeBase::OnPlayersReady()
 {
+	srand(rand());
+	//float remain = rand() / 2.0f;
+	bool devid = (rand() / 2.0f) == 0.0f;
+	FVector blackLoc = FVector(720.0f,65.0f,380.0f);
+	FVector whiteLoc = FVector(-800.0f, 65.0f, 360.0f);
+
 	AChBasePlayerController* pl1 = Cast<AChBasePlayerController>(PlayerControllerList[0]);
 	if (pl1)
 	{
-		pl1->SetControlledPawnsColor(PawnColorType::White);
+		pl1->SetControlledPawnsColor(PawnColorType::White);//devid? PawnColorType::White : PawnColorType::Black);
+		
+		//pl1->SetControlledPawnLocation(devid ? whiteLoc : blackLoc);
 	}
 
 	AChBasePlayerController* pl2 = Cast<AChBasePlayerController>(PlayerControllerList[1]);
 	if (pl2)
 	{
-		pl2->SetControlledPawnsColor(PawnColorType::Black);
+		pl2->SetControlledPawnsColor(PawnColorType::Black);//devid ? PawnColorType::Black : PawnColorType::White);
+		//pl1->SetControlledPawnLocation(devid ? blackLoc : whiteLoc);
+	}
+
+	CreateDesk();
+	InitStartupArragment();
+
+	if (LoadingWidget)
+	{
+		LoadingWidget->RemoveFromViewport();
 	}
 }
 
@@ -615,20 +651,24 @@ bool ASChessGameModeBase::CheckExamination(TEnumAsByte<PawnColorType> KingColor)
 void ASChessGameModeBase::OnCheckDeclaredEvent(ABasePawn* PawnDeclaredCheck)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Check!"));
-	ABasePawn* King = GetKingCell(PawnDeclaredCheck->PawnColor == PawnColorType::White ? PawnColorType::Black : PawnColorType::White)->GetPawnOnCell();
-
-	auto tmpArr = King->GetCellsBetweenPawns(PawnDeclaredCheck);
-	bool canBeProtected = KingCanBeProtected(PawnDeclaredCheck);
 
 	if (!KingCanEscape(PawnDeclaredCheck) && !ThreatCanBeRemoved(PawnDeclaredCheck) && !KingCanBeProtected(PawnDeclaredCheck))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Check&Mate!"));
+		if (OnCheckMateDeclaredDelegate.IsBound())
+		{
+			OnCheckMateDeclaredDelegate.Broadcast();
+		}
 	}
 
 	if (OnMoveEndDelegate.IsBound())
 	{
 		OnMoveEndDelegate.Broadcast();
 	}
+}
+
+void ASChessGameModeBase::OnCheckMateDeclaredEvent()
+{
 }
 
 

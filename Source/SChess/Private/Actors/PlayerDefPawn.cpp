@@ -20,11 +20,15 @@ void APlayerDefPawn::BeginPlay()
 	CurrentCellClicked = nullptr;
 	PreviosCellClicked = nullptr;
 
-	APlayerController* PlayerControl = UGameplayStatics::GetPlayerController(GetOwner(), 0); 
+	auto own = GetOwner();
+
+	AChBasePlayerController* PlayerControl = Cast<AChBasePlayerController>(UGameplayStatics::GetPlayerController(GetOwner(), 0));
 	if (PlayerControl)
 	{
 		PlayerControl->bShowMouseCursor = true;
 		PlayerControl->SetInputMode(FInputModeGameAndUI());
+		PlayerControl->ControlledPlayerPawn = this;
+	
 	}
 	
 
@@ -43,8 +47,11 @@ void APlayerDefPawn::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& Out
 
 APlayerDefPawn::APlayerDefPawn()
 {
+	CurrentCellClicked = nullptr;
+	PreviosCellClicked = nullptr;
+	bIsFisrtClick = true;
 	bReplicates = true;
-	SetReplicateMovement(true);
+	//SetReplicateMovement(true);
 }
 
 void APlayerDefPawn::Tick(float DeltaTime)
@@ -71,7 +78,7 @@ void APlayerDefPawn::UnHighlight_Implementation()
 	{
 		for (auto cell : AvailableCells)
 		{
-			cell->bIsHighlighted = false;//MeshComponent->SetRenderCustomDepth(true);
+			cell->MeshComponent->SetRenderCustomDepth(false);
 		}
 		
 	}

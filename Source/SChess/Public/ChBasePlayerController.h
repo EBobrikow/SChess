@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "Globals.h"
+#include "Actors/PlayerDefPawn.h"
 #include "ChBasePlayerController.generated.h"
 
 /**
@@ -22,6 +23,15 @@ public:
 
 	UFUNCTION()
 	void SetControlledPawnsColor(TEnumAsByte<PawnColorType> PawnsColor);
+
+	//UPROPERTY()
+	//FVector location;
+
+	UPROPERTY()
+	ADefaultPawn* ControlledPlayerPawn;
+
+	UFUNCTION()
+	void SetControlledPawnLocation(FVector loc);
 
 
 protected:

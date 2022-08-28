@@ -12,3 +12,11 @@ void AChBasePlayerController::SetControlledPawnsColor(TEnumAsByte<PawnColorType>
 {
 	ControlledPawnsColor = PawnsColor;
 }
+
+void AChBasePlayerController::SetControlledPawnLocation(FVector loc)
+{
+	if (ControlledPlayerPawn)
+	{
+		ControlledPlayerPawn->SetActorLocation(loc);
+	}
+}
